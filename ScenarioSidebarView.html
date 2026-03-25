@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Google Sans", Arial, sans-serif;
+            font-size: 13px;
+        }
+
+        body {
+            background: #f8f9fa;
+            padding: 12px;
+            color: #202124;
+        }
+
+        h2 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #1a5276;
+        }
+
+        .subtitle {
+            color: #5f6368;
+            font-size: 11px;
+            margin-bottom: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #dadce0;
+            margin-bottom: 14px;
+        }
+
+        .tab {
+            padding: 6px 14px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #5f6368;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab.active {
+            color: #1a5276;
+            border-bottom-color: #1a5276;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .section {
+            background: #fff;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #5f6368;
+            margin-bottom: 8px;
+            letter-spacing: .4px;
+        }
+
+        .field {
+            margin-bottom: 8px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 11px;
+            color: #5f6368;
+            margin-bottom: 2px;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            padding: 5px 8px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #202124;
+            background: #fff;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            outline: none;
+            border-color: #1a5276;
+        }
+
+        .row2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .row3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+        }
+
+        .seg-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .seg-table th {
+            font-size: 10px;
+            color: #5f6368;
+            text-align: left;
+            padding: 2px 4px;
+            font-weight: 600;
+        }
+
+        .seg-table td {
+            padding: 2px 4px;
+        }
+
+        .seg-table td input {
+            padding: 3px 5px;
+            font-size: 11px;
+        }
+
+        .seg-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #202124;
+            padding-top: 4px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 260px;
+            padding: 8px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-family: "Roboto Mono", monospace;
+            font-size: 11px;
+            resize: vertical;
+            color: #202124;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #1a5276;
+        }
+
+        .json-hint {
+            font-size: 10px;
+            color: #5f6368;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 9px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+
+        .btn-primary {
+            background: #1a5276;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #154360;
+        }
+
+        .btn-secondary {
+            background: #e8f0fe;
+            color: #1a5276;
+            margin-top: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #d2e3fc;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .status.ok {
+            background: #e6f4ea;
+            color: #137333;
+            display: block;
+        }
+
+        .status.err {
+            background: #fce8e6;
+            color: #c5221f;
+            display: block;
+        }
+
+        .export-box {
+            background: #f1f3f4;
+            border-radius: 4px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 10px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+            color: #202124;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>📊 Tetrix Scenario Loader</h2>
+    <p class="subtitle">Fill in the form or paste AI-generated JSON</p>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('form')">📝 Form</div>
+        <div class="tab" onclick="switchTab('json')">{ } JSON</div>
+        <div class="tab" onclick="switchTab('export')">⬆️ Export</div>
+    </div>
+
+    <!-- ── FORM PANEL ─────────────────────────────────────── -->
+    <div id="panel-form" class="panel active">
+
+        <div class="section">
+            <div class="section-title">Scenario Info</div>
+            <div class="field"><label>Scenario Name</label><input id="f-name" value="My Scenario" /></div>
+            <div class="row2">
+                <div class="field"><label>Active Round</label>
+                    <select id="f-round">
+                        <option>Seed $3M</option>
+                        <option>Series A $10M</option>
+                        <option>Series A $20M</option>
+                    </select>
+                </div>
+                <div class="field"><label>Close Date</label><input id="f-date" type="date" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Runway Target (mo)</label><input id="f-runway" type="number" value="18" />
+                </div>
+                <div class="field"><label>Forecast Horizon (mo)</label><input id="f-horizon" type="number" value="24" />
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Segment Assumptions</div>
+            <table class="seg-table">
+                <tr>
+                    <th></th>
+                    <th>ACV ($)</th>
+                    <th>Cycle (mo)</th>
+                    <th>Churn %</th>
+                    <th>Expan %</th>
+                </tr>
+                <tr>
+                    <td class="seg-label">ENT</td>
+                    <td><input id="ent-acv" type="number" value="60000" /></td>
+                    <td><input id="ent-cyc" type="number" value="6" /></td>
+                    <td><input id="ent-chu" type="number" value="5" /></td>
+                    <td><input id="ent-exp" type="number" value="15" /></td>
+                </tr>
+                <tr>
+                    <td class="seg-label">MM</td>
+                    <td><input id="mm-acv" type="number" value="18000" /></td>
+                    <td><input id="mm-cyc" type="number" value="3" /></td>
+                    <td><input id="mm-chu" type="number" value="8" /></td>
+                    <td><input id="mm-exp" type="number" value="10" /></td>
+                </tr>
+                <tr>
+                    <td class="seg-label">SMB</td>
+                    <td><input id="smb-acv" type="number" value="4800" /></td>
+                    <td><input id="smb-cyc" type="number" value="1" /></td>
+                    <td><input id="smb-chu" type="number" value="15" /></td>
+                    <td><input id="smb-exp" type="number" value="5" /></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <div class="section-title">New Logo Ramp (logos/mo)</div>
+            <table class="seg-table">
+                <tr>
+                    <th></th>
+                    <th>Mo 1-6</th>
+                    <th>Mo 7-12</th>
+                    <th>Mo 13-18</th>
+                    <th>Mo 19-24</th>
+                </tr>
+                <tr>
+                    <td class="seg-label">ENT</td>
+                    <td><input id="er1" type="number" value="0" /></td>
+                    <td><input id="er2" type="number" value="1" /></td>
+                    <td><input id="er3" type="number" value="2" /></td>
+                    <td><input id="er4" type="number" value="3" /></td>
+                </tr>
+                <tr>
+                    <td class="seg-label">MM</td>
+                    <td><input id="mr1" type="number" value="1" /></td>
+                    <td><input id="mr2" type="number" value="2" /></td>
+                    <td><input id="mr3" type="number" value="4" /></td>
+                    <td><input id="mr4" type="number" value="6" /></td>
+                </tr>
+                <tr>
+                    <td class="seg-label">SMB</td>
+                    <td><input id="sr1" type="number" value="2" /></td>
+                    <td><input id="sr2" type="number" value="5" /></td>
+                    <td><input id="sr3" type="number" value="10" /></td>
+                    <td><input id="sr4" type="number" value="15" /></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Headcount & Costs</div>
+            <table class="seg-table">
+                <tr>
+                    <th></th>
+                    <th>Start HC</th>
+                    <th>Trigger ($ARR)</th>
+                    <th>Cost/yr ($)</th>
+                </tr>
+                <tr>
+                    <td class="seg-label">Eng</td>
+                    <td><input id="hc-eng-s" type="number" value="4" /></td>
+                    <td><input id="hc-eng-t" type="number" value="500000" /></td>
+                    <td><input id="hc-eng-c" type="number" value="180000" /></td>
+                </tr>
+                <tr>
+                    <td class="seg-label">Sales</td>
+                    <td><input id="hc-sal-s" type="number" value="1" /></td>
+                    <td><input id="hc-sal-t" type="number" value="200000" /></td>
+                    <td><input id="hc-sal-c" type="number" value="120000" /></td>
+                </tr>
+                <tr>
+                    <td class="seg-label">CS</td>
+                    <td><input id="hc-cs-s" type="number" value="1" /></td>
+                    <td><input id="hc-cs-t" type="number" value="100000" /></td>
+                    <td><input id="hc-cs-c" type="number" value="90000" /></td>
+                </tr>
+                <tr>
+                    <td class="seg-label">G&A</td>
+                    <td><input id="hc-ga-s" type="number" value="2" /></td>
+                    <td><input id="hc-ga-t" type="number" value="500000" /></td>
+                    <td><input id="hc-ga-c" type="number" value="100000" /></td>
+                </tr>
+            </table>
+            <div class="row2" style="margin-top:8px">
+                <div class="field"><label>Sales Commission (%)</label><input id="commission" type="number" value="10" />
+                </div>
+                <div class="field"><label>Infra / customer / mo ($)</label><input id="infra" type="number" value="50" />
+                </div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Tooling / eng / mo ($)</label><input id="tooling" type="number" value="200" />
+                </div>
+                <div class="field"><label>Office / emp / mo ($)</label><input id="office" type="number" value="100" />
+                </div>
+            </div>
+            <div class="field"><label>Marketing (% of raise)</label><input id="marketing" type="number" value="5" />
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-form" onclick="submitForm()">⬇️ Load into Sheet</button>
+    </div>
+
+    <!-- ── JSON PANEL ─────────────────────────────────────── -->
+    <div id="panel-json" class="panel">
+        <p class="json-hint">
+            Ask Claude: <em>"Generate a Tetrix scenario JSON for [your description]"</em> and paste the result below.
+        </p>
+        <textarea id="json-input" placeholder='Paste JSON scenario here...'></textarea>
+        <button class="btn btn-primary" id="btn-json" onclick="submitJson()">⬇️ Load into Sheet</button>
+    </div>
+
+    <!-- ── EXPORT PANEL ───────────────────────────────────── -->
+    <div id="panel-export" class="panel">
+        <p class="json-hint">Export the current Drivers tab as JSON — paste into Claude to ask for variations.</p>
+        <button class="btn btn-secondary" onclick="exportCurrent()">📤 Read current model state</button>
+        <div id="export-out" class="export-box" style="display:none"></div>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <script>
+        // Set today's date as default
+        document.getElementById("f-date").value = new Date().toISOString().split("T")[0];
+
+        function switchTab(name) {
+            document.querySelectorAll(".tab").forEach((t, i) => {
+                t.classList.toggle("active", ["form", "json", "export"][i] === name);
+            });
+            document.querySelectorAll(".panel").forEach((p, i) => {
+                p.classList.toggle("active", ["panel-form", "panel-json", "panel-export"][i] === "panel-" + name);
+            });
+            document.getElementById("status").className = "status";
+        }
+
+        function n(id) { return Number(document.getElementById(id).value) || 0; }
+        function v(id) { return document.getElementById(id).value; }
+
+        function buildFromForm() {
+            return {
+                meta: {
+                    name: v("f-name"),
+                    activeScenario: v("f-round"),
+                    closeDate: v("f-date"),
+                    runwayTarget: n("f-runway"),
+                    forecastHorizon: n("f-horizon"),
+                },
+                segments: {
+                    enterprise: { acv: n("ent-acv"), salesCycle: n("ent-cyc"), churnRate: n("ent-chu") / 100, expansionRate: n("ent-exp") / 100 },
+                    midMarket: { acv: n("mm-acv"), salesCycle: n("mm-cyc"), churnRate: n("mm-chu") / 100, expansionRate: n("mm-exp") / 100 },
+                    smb: { acv: n("smb-acv"), salesCycle: n("smb-cyc"), churnRate: n("smb-chu") / 100, expansionRate: n("smb-exp") / 100 },
+                },
+                logoRamp: {
+                    enterprise: [n("er1"), n("er2"), n("er3"), n("er4")],
+                    midMarket: [n("mr1"), n("mr2"), n("mr3"), n("mr4")],
+                    smb: [n("sr1"), n("sr2"), n("sr3"), n("sr4")],
+                },
+                headcount: {
+                    engineering: { startHC: n("hc-eng-s"), hireTrigger: n("hc-eng-t"), annualCost: n("hc-eng-c") },
+                    sales: { startHC: n("hc-sal-s"), hireTrigger: n("hc-sal-t"), annualCost: n("hc-sal-c") },
+                    csSupport: { startHC: n("hc-cs-s"), hireTrigger: n("hc-cs-t"), annualCost: n("hc-cs-c") },
+                    gAndA: { startHC: n("hc-ga-s"), hireTrigger: n("hc-ga-t"), annualCost: n("hc-ga-c") },
+                },
+                salesCommission: n("commission") / 100,
+                costs: {
+                    infraPerCustomerPerMonth: n("infra"),
+                    toolingPerEngineerPerMonth: n("tooling"),
+                    officeMiscPerEmployeePerMonth: n("office"),
+                    marketingPctOfRaise: n("marketing") / 100,
+                }
+            };
+        }
+
+        function setStatus(msg, isErr) {
+            const el = document.getElementById("status");
+            el.textContent = msg;
+            el.className = "status " + (isErr ? "err" : "ok");
+        }
+
+        function setLoading(btnId, loading) {
+            const btn = document.getElementById(btnId);
+            btn.disabled = loading;
+            btn.textContent = loading ? "⏳ Loading..." : "⬇️ Load into Sheet";
+        }
+
+        function submitForm() {
+            setLoading("btn-form", true);
+            google.script.run
+                .withSuccessHandler(msg => { setStatus(msg); setLoading("btn-form", false); })
+                .withFailureHandler(err => { setStatus("❌ " + err.message, true); setLoading("btn-form", false); })
+                .applyScenario(buildFromForm());
+        }
+
+        function submitJson() {
+            let data;
+            try {
+                data = JSON.parse(document.getElementById("json-input").value);
+            } catch (e) {
+                setStatus("❌ Invalid JSON — check for missing commas or brackets.", true);
+                return;
+            }
+            setLoading("btn-json", true);
+            google.script.run
+                .withSuccessHandler(msg => { setStatus(msg); setLoading("btn-json", false); })
+                .withFailureHandler(err => { setStatus("❌ " + err.message, true); setLoading("btn-json", false); })
+                .applyScenario(data);
+        }
+
+        function exportCurrent() {
+            google.script.run
+                .withSuccessHandler(data => {
+                    const box = document.getElementById("export-out");
+                    box.textContent = JSON.stringify(data, null, 2);
+                    box.style.display = "block";
+                })
+                .withFailureHandler(err => setStatus("❌ " + err.message, true))
+                .getCurrentScenario();
+        }
+    </script>
+</body>
+
+</html>
