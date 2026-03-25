@@ -1,52 +1,59 @@
 # Deskree forecast — Google Sheets
 
-Google Apps Script project used to **build and run financial forecasting for Deskree** inside Google Sheets. The spreadsheet model covers drivers, funding, headcount, revenue, P&L, cash flow, and scenario comparison; a custom sidebar helps load named scenarios into the single input sheet.
+Google Apps Script project used to **build and run financial forecasting for Deskree** inside Google Sheets. The spreadsheet model covers drivers, funding, headcount, revenue, P&L, cash flow, scenarios, and a **benchmark reality check**; a custom sidebar loads packaged scenarios into the input sheet.
 
 ## What’s in this repo
 
 | File | Role |
 |------|------|
-| `Setup.gs` | One-shot setup: creates tabs, layouts, and formulas for the full financial model. |
-| `ScenarioSidebar.gs` | Menu entry and server functions that read/write the **Drivers** sheet from the sidebar. |
+| `Setup.gs` | One-shot setup (**v2**): creates tabs, layouts, and formulas for the full financial model, including the **Benchmarks** shell. |
+| `ScenarioSidebar.gs` | Custom menu, `applyScenario` / `getCurrentScenario` (**v2** Drivers layout), and opens the HTML sidebar. |
 | `ScenarioSidebarView.html` | Sidebar UI (hosted as an HTML file in the Apps Script project). |
+| `benchmarks.gs` | `runBenchmarks()` — reads **Drivers**, **Headcount**, **P&L**, and **Cash flow**, scores key SaaS metrics, and writes results to **🚦 Benchmarks**. |
 
 ## Model overview
 
-Running `setupFinancialModel()` in Apps Script builds these sheets:
+Running `setupFinancialModel()` builds these sheets:
 
-- **Instructions** — how to use the model (inputs vs formulas).
-- **Drivers** — the **only** tab where you enter numbers; everything else flows from here.
-- **Funding**, **Headcount**, **Revenue**, **P&L**, **Cash flow**, **Summary** — calculated views.
-- **Scenarios** — scenario framing (e.g. multiple funding paths).
+- **Instructions** — how to use the model (inputs vs formulas) and workflow (including when to run benchmarks).
+- **Drivers** — the **only** tab where you enter assumptions: funding rounds, ARR targets, ICP segments (mid-market & enterprise), logo ramp, maintenance ratios (AE / FDE / CSM), department defaults, individual roles, marketing, infrastructure, and sales comp.
+- **Funding**, **Headcount**, **Revenue**, **P&L**, **Cash flow**, **Summary** — calculated views driven from Drivers.
+- **Scenarios** — scenario comparison / framing.
+- **Benchmarks** — populated when you run **Check Benchmarks** (not auto-updated on every edit).
 
-The model is built around **inputs → calculations → outputs**: edit **Drivers** only so formulas stay consistent.
+The model follows **inputs → calculations → outputs**: keep assumptions in **Drivers** so downstream formulas stay intact.
 
-## Scenario sidebar
+## Tetrix menu
 
-The **Tetrix** custom menu (from `ScenarioSidebar.gs`) opens **“Open Scenario Loader”**, which shows the HTML sidebar. You can:
+From `ScenarioSidebar.gs`, the **📊 Tetrix** menu provides:
 
-- Apply a packaged scenario (writes meta, segments, logo ramp, headcount, and cost fields on **Drivers**).
-- Inspect **current model state** via `getCurrentScenario()`-backed behavior in the UI.
+1. **Open Scenario Loader** — HTML sidebar to apply a scenario or inspect **current model state** (`getCurrentScenario()`).
+2. **Check Benchmarks** — runs `runBenchmarks()` and fills **🚦 Benchmarks** with traffic-light style checks (e.g. CAC payback, LTV:CAC, implied NRR vs churn/expansion, growth vs Bessemer-style heuristics, ARR vs capital raised, AE account load, gross margin, burn multiple when wired).
 
-Ensure **Drivers** exists (run setup first) or the sidebar will report that the tab is missing.
+After loading a scenario, the script suggests running **Check Benchmarks** before sharing numbers externally.
+
+## Scenario sidebar (v2)
+
+The loader writes and reads the v2 Drivers layout: **funding rounds** (up to five), **ARR targets** and horizon, **segment** economics (MM/ENT), **logo ramp**, **maintenance ratios**, **headcount** department defaults and up to **ten named positions**, plus **marketing**, **infrastructure**, and **sales** fields. The HTML file name in Apps Script must stay **`ScenarioSidebarView`** (matching `createHtmlOutputFromFile("ScenarioSidebarView")`).
 
 ## Setup in Google Sheets
 
 1. Open or create a Google Sheet for Deskree forecasting.
-2. **Extensions → Apps Script** and create a project (or open an existing one).
-3. Add script files matching this repo:
-   - Paste or sync `Setup.gs` as a `.gs` file (e.g. `Setup`).
-   - Add `ScenarioSidebar.gs`.
-   - **File → Add file → HTML**, name it **`ScenarioSidebarView`** (must match `createHtmlOutputFromFile("ScenarioSidebarView")`), and paste `ScenarioSidebarView.html` contents.
-4. Save the project.
-5. In the script editor, select **`setupFinancialModel`** and click **Run**. Authorize the script when prompted.
-6. Reload the spreadsheet; use the **Tetrix** menu to open the scenario loader when needed.
+2. **Extensions → Apps Script** and create or open a project.
+3. Add files to match this repo:
+   - `Setup.gs`
+   - `ScenarioSidebar.gs`
+   - `benchmarks.gs` (defines `runBenchmarks`, referenced by the Tetrix menu)
+   - **File → Add file → HTML**, name **`ScenarioSidebarView`**, paste `ScenarioSidebarView.html`
+4. Save.
+5. Run **`setupFinancialModel`** once and authorize when prompted.
+6. Reload the spreadsheet; use **📊 Tetrix** for the scenario loader and benchmark check.
 
 ## Development notes
 
-- This repository holds source for copy/deploy into Apps Script; there is no local `clasp` configuration in the repo by default. You can use [clasp](https://github.com/google/clasp) to push these files if you prefer CLI workflows.
-- Re-running `setupFinancialModel()` **clears and rebuilds** the configured tabs; back up data or use a copy of the sheet before re-running.
+- Source lives here for copy/sync into Apps Script; add [clasp](https://github.com/google/clasp) locally if you want push/pull workflows.
+- Re-running `setupFinancialModel()` **clears and rebuilds** the listed tabs; duplicate the sheet or export data before re-running.
 
 ---
 
-*Internal product naming in the UI (“Tetrix”) refers to this forecast tooling; the business context is Deskree planning in Sheets.*
+*UI labeling (“Tetrix”) is the in-sheet name for this tooling; the business context is Deskree planning in Sheets.*

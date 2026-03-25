@@ -1,15 +1,12 @@
 // ============================================================
-// TETRIX SCENARIO SIDEBAR
-// Add this as a new script file called "ScenarioSidebar"
-// in the same Apps Script project as your model.
+// TETRIX SCENARIO SIDEBAR v2
 // ============================================================
-
-// ─── MENU ───────────────────────────────────────────────────
 
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu("📊 Tetrix")
     .addItem("Open Scenario Loader", "openScenarioSidebar")
+    .addItem("🚦 Check Benchmarks",  "runBenchmarks")
     .addToUi();
 }
 
@@ -20,91 +17,157 @@ function openScenarioSidebar() {
   SpreadsheetApp.getUi().showSidebar(html);
 }
 
-// ─── CALLED BY SIDEBAR ──────────────────────────────────────
+// ─── APPLY SCENARIO ─────────────────────────────────────────
 
 function applyScenario(data) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName("🎛️ Drivers");
   if (!sh) throw new Error("'🎛️ Drivers' tab not found. Run setupFinancialModel() first.");
 
-  // Meta
-  sh.getRange("B4").setValue(data.meta.activeScenario);
-  sh.getRange("B5").setValue(new Date(data.meta.closeDate));
-  sh.getRange("B6").setValue(data.meta.runwayTarget);
-  sh.getRange("B7").setValue(data.meta.forecastHorizon);
+  // ── Meta
+  sh.getRange("B14").setValue(data.meta.forecastHorizon);
 
-  // Segments
-  const segs = [data.segments.enterprise, data.segments.midMarket, data.segments.smb];
-  segs.forEach((seg, i) => {
-    const r = 11 + i;
-    sh.getRange(r, 2).setValue(seg.acv);
-    sh.getRange(r, 3).setValue(seg.salesCycle);
-    sh.getRange(r, 4).setValue(seg.churnRate);
-    sh.getRange(r, 5).setValue(seg.expansionRate);
+  // ── Funding Rounds (rows 5–9, cols 1–5)
+  const rounds = data.fundingRounds || [];
+  for (let i = 0; i < 5; i++) {
+    const r = 5 + i;
+    const round = rounds[i];
+    if (round) {
+      sh.getRange(r,1).setValue(round.name || "");
+      sh.getRange(r,2).setValue(round.amount || "");
+      sh.getRange(r,3).setValue(round.closeDate ? new Date(round.closeDate) : "");
+      sh.getRange(r,4).setValue(round.expectedARR || "");
+      sh.getRange(r,5).setValue(round.notes || "");
+    } else {
+      [1,2,3,4,5].forEach(c => sh.getRange(r,c).clearContent());
+    }
+  }
+
+  // ── ARR Targets
+  sh.getRange("B12").setValue(data.arrTargets.targetARR);
+  sh.getRange("B13").setValue(data.arrTargets.momGrowthRate);
+
+  // ── ICP Segments (row 18 = MM, row 19 = ENT)
+  [["midMarket", 18], ["enterprise", 19]].forEach(([key, row]) => {
+    const seg = data.segments[key];
+    sh.getRange(row,2).setValue(seg.begACV);
+    sh.getRange(row,3).setValue(seg.expACV);
+    sh.getRange(row,4).setValue(seg.churnRate);
+    sh.getRange(row,5).setValue(seg.expansionRate);
+    sh.getRange(row,6).setValue(seg.expansionMonth);
+    sh.getRange(row,7).setValue(seg.cac);
+    sh.getRange(row,8).setValue(seg.leadTime);
+    sh.getRange(row,9).setValue(seg.closeRate);
   });
 
-  // Logo ramp
-  const ramps = [data.logoRamp.enterprise, data.logoRamp.midMarket, data.logoRamp.smb];
-  ramps.forEach((ramp, i) => {
-    ramp.forEach((val, c) => sh.getRange(17 + i, c + 2).setValue(val));
+  // ── Logo Ramp (row 23 = MM, row 24 = ENT, cols B–E)
+  [["midMarket", 23], ["enterprise", 24]].forEach(([key, row]) => {
+    const ramp = data.logoRamp[key] || [0,0,0,0];
+    ramp.forEach((v, c) => sh.getRange(row, c+2).setValue(v));
   });
 
-  // Headcount
-  const depts = [
-    data.headcount.engineering, data.headcount.sales,
-    data.headcount.csSupport,   data.headcount.gAndA
+  // ── Maintenance Ratios (rows 28–30, col 2)
+  const mr = data.maintenanceRatios;
+  sh.getRange("B28").setValue(mr.aePerAccounts);
+  sh.getRange("B29").setValue(mr.fdePerAccounts);
+  sh.getRange("B30").setValue(mr.csmPerAccounts);
+
+  // ── Headcount Dept Defaults (rows 34–37)
+  const deptMap = [
+    ["engineering", 34], ["sales", 35], ["csSupport", 36], ["gAndA", 37]
   ];
-  depts.forEach((dept, i) => {
-    sh.getRange(23 + i, 2).setValue(dept.startHC);
-    sh.getRange(23 + i, 3).setValue(dept.hireTrigger);
-    sh.getRange(23 + i, 4).setValue(dept.annualCost);
+  deptMap.forEach(([key, row]) => {
+    const dept = data.headcount.deptDefaults[key];
+    sh.getRange(row,2).setValue(dept.startHC);
+    sh.getRange(row,3).setValue(dept.annualSalary);
+    sh.getRange(row,4).setValue(dept.swCostPerMo);
+    sh.getRange(row,5).setValue(dept.hwCostOneTime);
+    sh.getRange(row,6).setValue(dept.insurancePerMo);
   });
-  sh.getRange("B28").setValue(data.salesCommission);
 
-  // Costs
-  sh.getRange("B31").setValue(data.costs.infraPerCustomerPerMonth);
-  sh.getRange("B32").setValue(data.costs.toolingPerEngineerPerMonth);
-  sh.getRange("B33").setValue(data.costs.officeMiscPerEmployeePerMonth);
-  sh.getRange("B34").setValue(data.costs.marketingPctOfRaise);
+  // ── Individual Positions (rows 41–50)
+  const positions = data.headcount.positions || [];
+  for (let i = 0; i < 10; i++) {
+    const r = 41 + i;
+    const pos = positions[i];
+    if (pos) {
+      sh.getRange(r,1).setValue(pos.title || "");
+      sh.getRange(r,2).setValue(pos.dept || "");
+      sh.getRange(r,3).setValue(pos.startDate ? new Date(pos.startDate) : "");
+      sh.getRange(r,4).setValue(pos.annualSalary || "");
+      sh.getRange(r,5).setValue(pos.swCostPerMo || "");
+    } else {
+      [1,2,3,4,5].forEach(c => sh.getRange(r,c).clearContent());
+    }
+  }
 
-  return `✅ "${data.meta.name}" loaded successfully.`;
+  // ── Marketing
+  sh.getRange("B53").setValue(data.marketing.eventsAnnual);
+  sh.getRange("B54").setValue(data.marketing.digitalAnnual);
+
+  // ── Infrastructure
+  sh.getRange("B58").setValue(data.infrastructure.infraPerCustomerPerMo);
+  sh.getRange("B59").setValue(data.infrastructure.toolingPerEngineerPerMo);
+
+  // ── Sales
+  sh.getRange("B62").setValue(data.sales.commission);
+  sh.getRange("B63").setValue(data.sales.accelerator);
+
+  return `✅ "${data.meta.name}" loaded. Run 🚦 Check Benchmarks to validate.`;
 }
+
+// ─── EXPORT CURRENT STATE ────────────────────────────────────
 
 function getCurrentScenario() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName("🎛️ Drivers");
   if (!sh) return null;
+  function v(row, col) { return sh.getRange(row, col).getValue(); }
+
+  const rounds = [];
+  for (let i = 0; i < 5; i++) {
+    const name = v(5+i, 1);
+    if (name) rounds.push({
+      name, amount: v(5+i,2),
+      closeDate: Utilities.formatDate(v(5+i,3) || new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd"),
+      expectedARR: v(5+i,4), notes: v(5+i,5),
+    });
+  }
+
+  const positions = [];
+  for (let i = 0; i < 10; i++) {
+    const title = v(41+i, 1);
+    if (title) positions.push({
+      title, dept: v(41+i,2),
+      startDate: Utilities.formatDate(v(41+i,3) || new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd"),
+      annualSalary: v(41+i,4), swCostPerMo: v(41+i,5),
+    });
+  }
 
   return {
-    meta: {
-      name:            "Current Model State",
-      activeScenario:  sh.getRange("B4").getValue(),
-      closeDate:       Utilities.formatDate(sh.getRange("B5").getValue() || new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd"),
-      runwayTarget:    sh.getRange("B6").getValue(),
-      forecastHorizon: sh.getRange("B7").getValue(),
-    },
+    meta: { name: "Current Model State", forecastHorizon: v(14,2) },
+    fundingRounds: rounds,
+    arrTargets: { targetARR: v(12,2), momGrowthRate: v(13,2) },
     segments: {
-      enterprise: { acv: sh.getRange(11,2).getValue(), salesCycle: sh.getRange(11,3).getValue(), churnRate: sh.getRange(11,4).getValue(), expansionRate: sh.getRange(11,5).getValue() },
-      midMarket:  { acv: sh.getRange(12,2).getValue(), salesCycle: sh.getRange(12,3).getValue(), churnRate: sh.getRange(12,4).getValue(), expansionRate: sh.getRange(12,5).getValue() },
-      smb:        { acv: sh.getRange(13,2).getValue(), salesCycle: sh.getRange(13,3).getValue(), churnRate: sh.getRange(13,4).getValue(), expansionRate: sh.getRange(13,5).getValue() },
+      midMarket:  { begACV: v(18,2), expACV: v(18,3), churnRate: v(18,4), expansionRate: v(18,5), expansionMonth: v(18,6), cac: v(18,7), leadTime: v(18,8), closeRate: v(18,9) },
+      enterprise: { begACV: v(19,2), expACV: v(19,3), churnRate: v(19,4), expansionRate: v(19,5), expansionMonth: v(19,6), cac: v(19,7), leadTime: v(19,8), closeRate: v(19,9) },
     },
     logoRamp: {
-      enterprise: [sh.getRange(17,2).getValue(), sh.getRange(17,3).getValue(), sh.getRange(17,4).getValue(), sh.getRange(17,5).getValue()],
-      midMarket:  [sh.getRange(18,2).getValue(), sh.getRange(18,3).getValue(), sh.getRange(18,4).getValue(), sh.getRange(18,5).getValue()],
-      smb:        [sh.getRange(19,2).getValue(), sh.getRange(19,3).getValue(), sh.getRange(19,4).getValue(), sh.getRange(19,5).getValue()],
+      midMarket:  [v(23,2), v(23,3), v(23,4), v(23,5)],
+      enterprise: [v(24,2), v(24,3), v(24,4), v(24,5)],
     },
+    maintenanceRatios: { aePerAccounts: v(28,2), fdePerAccounts: v(29,2), csmPerAccounts: v(30,2) },
     headcount: {
-      engineering: { startHC: sh.getRange(23,2).getValue(), hireTrigger: sh.getRange(23,3).getValue(), annualCost: sh.getRange(23,4).getValue() },
-      sales:       { startHC: sh.getRange(24,2).getValue(), hireTrigger: sh.getRange(24,3).getValue(), annualCost: sh.getRange(24,4).getValue() },
-      csSupport:   { startHC: sh.getRange(25,2).getValue(), hireTrigger: sh.getRange(25,3).getValue(), annualCost: sh.getRange(25,4).getValue() },
-      gAndA:       { startHC: sh.getRange(26,2).getValue(), hireTrigger: sh.getRange(26,3).getValue(), annualCost: sh.getRange(26,4).getValue() },
+      deptDefaults: {
+        engineering: { startHC: v(34,2), annualSalary: v(34,3), swCostPerMo: v(34,4), hwCostOneTime: v(34,5), insurancePerMo: v(34,6) },
+        sales:       { startHC: v(35,2), annualSalary: v(35,3), swCostPerMo: v(35,4), hwCostOneTime: v(35,5), insurancePerMo: v(35,6) },
+        csSupport:   { startHC: v(36,2), annualSalary: v(36,3), swCostPerMo: v(36,4), hwCostOneTime: v(36,5), insurancePerMo: v(36,6) },
+        gAndA:       { startHC: v(37,2), annualSalary: v(37,3), swCostPerMo: v(37,4), hwCostOneTime: v(37,5), insurancePerMo: v(37,6) },
+      },
+      positions,
     },
-    salesCommission: sh.getRange("B28").getValue(),
-    costs: {
-      infraPerCustomerPerMonth:      sh.getRange("B31").getValue(),
-      toolingPerEngineerPerMonth:    sh.getRange("B32").getValue(),
-      officeMiscPerEmployeePerMonth: sh.getRange("B33").getValue(),
-      marketingPctOfRaise:           sh.getRange("B34").getValue(),
-    }
+    marketing:      { eventsAnnual: v(53,2), digitalAnnual: v(54,2) },
+    infrastructure: { infraPerCustomerPerMo: v(58,2), toolingPerEngineerPerMo: v(59,2) },
+    sales:          { commission: v(62,2), accelerator: v(63,2) },
   };
 }
