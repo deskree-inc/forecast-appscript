@@ -1,0 +1,95 @@
+{
+    "meta": {
+        "name": "Scenario template",
+        "forecastHorizon": 24
+    },
+    "fundingRounds": [
+        {
+            "name": "Round A",
+            "amount": 0,
+            "closeDate": "2026-01-01",
+            "expectedARR": 0,
+            "notes": ""
+        }
+    ],
+    "arrTargets": {
+        "momGrowthRate": 0.1,
+        "targetARR": 0
+    },
+    "segments": {
+        "midMarket": {
+            "begACV": 0,
+            "expACV": 0,
+            "churnRate": 0,
+            "expansionRate": 0,
+            "expansionMonth": 12,
+            "cac": 0,
+            "leadTime": 0,
+            "closeRate": 0
+        },
+        "enterprise": {
+            "begACV": 0,
+            "expACV": 0,
+            "churnRate": 0,
+            "expansionRate": 0,
+            "expansionMonth": 12,
+            "cac": 0,
+            "leadTime": 0,
+            "closeRate": 0
+        }
+    },
+    "logoRamp": {
+        "midMarket": [0, 0, 0, 0],
+        "enterprise": [0, 0, 0, 0]
+    },
+    "maintenanceRatios": {
+        "aePerAccounts": 0,
+        "fdePerAccounts": 0,
+        "csmPerAccounts": 0
+    },
+    "headcount": {
+        "positions": [],
+        "deptDefaults": {
+            "engineering": {
+                "startHC": 0,
+                "annualSalary": 0,
+                "swCostPerMo": 0,
+                "hwCostOneTime": 0,
+                "insurancePerMo": 0
+            },
+            "sales": {
+                "startHC": 0,
+                "annualSalary": 0,
+                "swCostPerMo": 0,
+                "hwCostOneTime": 0,
+                "insurancePerMo": 0
+            },
+            "csSupport": {
+                "startHC": 0,
+                "annualSalary": 0,
+                "swCostPerMo": 0,
+                "hwCostOneTime": 0,
+                "insurancePerMo": 0
+            },
+            "gAndA": {
+                "startHC": 0,
+                "annualSalary": 0,
+                "swCostPerMo": 0,
+                "hwCostOneTime": 0,
+                "insurancePerMo": 0
+            }
+        }
+    },
+    "marketing": {
+        "digitalAnnual": 0,
+        "eventsAnnual": 0
+    },
+    "infrastructure": {
+        "toolingPerEngineerPerMo": 0,
+        "infraPerCustomerPerMo": 0
+    },
+    "sales": {
+        "commission": 0,
+        "accelerator": 0
+    }
+}

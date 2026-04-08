@@ -1,0 +1,3 @@
+# Private scenario JSON files (copy scenario-template.json to start)
+scenarios/*
+!scenarios/scenario-template.json
