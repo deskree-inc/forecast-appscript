@@ -15,6 +15,63 @@ Google Apps Script project used to **build and run financial forecasting for Des
 | `InvestorView.gs` | `showInvestorView` / `showInternalSheets` — investor mode hides internal tabs + **Instructions**; opens **`📋 For investors`** (built in `SetupInvestorBrief.gs`). |
 | `Benchmarks.gs` | `runBenchmarks()` — reads **Drivers**, **Headcount**, **P&L**, and **Cash flow**, scores key SaaS metrics, and writes results to **🚦 Benchmarks**. |
 
+## Getting started with Cursor
+
+Use [Cursor](https://cursor.com/) (or any editor) on **this git repo** when you are changing **source code**. The distinction below matters: one path changes **how the model works**; the other only changes **inputs** into the existing model.
+
+### Two tracks (code vs scenarios)
+
+| | **A — Apps Script / repo (code)** | **B — Scenarios (data only)** |
+|---|-------------------------------------|--------------------------------|
+| **Goal** | Change behavior: formulas, new drivers, benchmarks, sidebar, setup tabs, `DR` row maps, revenue/headcount logic | Try different **assumptions** using the **same** model: funding, ACVs, segments, horizon, etc. |
+| **What you edit** | Files in this repo: `*.gs`, `ScenarioSidebarView.html` | JSON that matches the v3.1 scenario shape (see [`scenarios/scenario-template.json`](scenarios/scenario-template.json) or [`scenarios/7m-round.json`](scenarios/7m-round.json)) |
+| **How it gets into Sheets** | **`clasp push`** uploads code to the bound Apps Script project; reload the spreadsheet | **No deploy:** open the spreadsheet → **📊 Tetrix → Open Scenario Loader** → paste JSON in the **{ } JSON** tab (or use the **Form** tab) → **Load into Sheet**. Optionally copy JSON from this repo or from an AI chat. |
+| **Uses AI how?** | Cursor / Copilot / chat **on the codebase**: refactor `Benchmarks.gs`, add a metric, fix `SetupDrivers.gs`, explain `ModelConstants.gs` | ChatGPT / Claude / etc. **draft or tweak scenario JSON** from a plain-English brief; you paste into the sidebar. You can also **Export** current Drivers JSON from the loader, edit in the AI, and paste back. |
+| **Requires clasp?** | **Yes**, to sync local edits to Apps Script (unless you paste into the browser editor by hand) | **No** for trying scenarios in a Sheet someone already shared. **Yes** only if you also want to version JSON in git or change code. |
+
+**Rule of thumb:** If you need to **adjust or change the behavior of the forecast** (new calculations, different sheet layout, benchmark rules, loader fields), you work **in this repo** and **push Apps Script** with clasp. If you **do not** need functionality changes—only different numbers and assumptions—you can **iterate with AI-generated scenarios**, load them in Google Sheets, run **Check Benchmarks**, and repeat **without** touching `.gs` files or running `clasp push`.
+
+```mermaid
+flowchart LR
+  subgraph codePath [Code path]
+    Cursor[Edit repo in Cursor]
+    Push["clasp push"]
+    SheetCode[Apps Script in Sheet]
+    Cursor --> Push --> SheetCode
+  end
+  subgraph scenarioPath [Scenario path]
+    Json[Scenario JSON]
+    Loader[Tetrix sidebar loader]
+    Drivers[Drivers inputs]
+    Json --> Loader --> Drivers
+  end
+```
+
+### Environment setup (local)
+
+1. **Clone** this repository and open the folder **as the project root** in Cursor.
+2. Install **[Node.js](https://nodejs.org/)** (LTS is fine). Clasp runs on Node; you also use `npm` if you add tooling later.
+3. Install **clasp** globally: `npm install -g @google/clasp` (same as in [Deploy with clasp](#deploy-with-clasp-local--google-sheets) below).
+4. **Authenticate once:** `clasp login` (browser OAuth for the Google account that owns the spreadsheet).
+5. **Bind to the right script:** ensure [`.clasp.json`](.clasp.json) `scriptId` matches **your** Apps Script project (**Project Settings → Script ID**). If you fork or duplicate the Sheet, update `scriptId` or you will overwrite the wrong project.
+
+After that, day-to-day upload is: edit files in Cursor → `clasp push` from the repo root → **reload** the Google Sheet so menus and scripts refresh.
+
+### clasp in one minute (details below)
+
+From the repo root:
+
+```bash
+clasp push
+```
+
+For login, pull, `open-script`, API enablement, and forks, see **[Deploy with clasp (local → Google Sheets)](#deploy-with-clasp-local--google-sheets)**—that section is the full reference; this Cursor section only frames *when* to use it versus scenarios.
+
+### Suggested workflows
+
+- **Scenario-only iteration (no code):** Describe the case to an AI → get JSON → Tetrix **{ } JSON** → Load → **🚦 Check Benchmarks** → adjust JSON and repeat. Commit updated JSON under [`scenarios/`](scenarios/) if you want history.
+- **Code change:** Branch in git → edit `*.gs` / HTML in Cursor → `clasp push` → test in Sheets → PR. Use **Rebuild model** from Tetrix only when you changed **setup** or tab structure (destructive; see Development notes).
+
 ## Model overview
 
 Running `setupFinancialModel()` builds these sheets:
