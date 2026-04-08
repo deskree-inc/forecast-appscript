@@ -247,13 +247,46 @@
         .investor-strip .btn {
             margin-top: 0;
         }
+
+        .hint-row {
+            font-size: 10px;
+            color: #5f6368;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .hint-row button {
+            margin-top: 6px;
+            padding: 4px 8px;
+            font-size: 11px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            background: #fff;
+            color: #1a5276;
+            cursor: pointer;
+        }
+
+        .hint-row button:hover {
+            background: #e8f0fe;
+        }
+
+        .subhead {
+            font-size: 10px;
+            font-weight: 600;
+            color: #1a5276;
+            margin: 6px 0 4px;
+        }
+
+        .form-scroll {
+            max-height: none;
+        }
     </style>
 </head>
 
 <body>
 
     <h2>📊 Tetrix Scenario Loader</h2>
-    <p class="subtitle">Fill in the form or paste AI-generated JSON</p>
+    <p class="subtitle">Form matches v3.1 Drivers — or paste JSON / export from the sheet</p>
 
     <div class="tabs">
         <div class="tab active" onclick="switchTab('form')">📝 Form</div>
@@ -270,145 +303,178 @@
         </div>
     </div>
 
-    <!-- ── FORM PANEL ─────────────────────────────────────── -->
+    <!-- ── FORM PANEL (v3.1 Drivers — matches applyScenario) ── -->
     <div id="panel-form" class="panel active">
+        <div class="hint-row">
+            Individual named positions are not on this form (use JSON).<br />
+            <button type="button" onclick="prefillFromSheet()">Load current sheet into form</button>
+        </div>
 
         <div class="section">
-            <div class="section-title">Scenario Info</div>
-            <div class="field"><label>Scenario Name</label><input id="f-name" value="My Scenario" /></div>
+            <div class="section-title">Meta</div>
+            <div class="field"><label>Scenario name</label><input id="m-name" type="text" value="Quick scenario" /></div>
+            <div class="field"><label>Forecast horizon (months) — B14</label><input id="m-horizon" type="number" value="24" min="1" max="120" /></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">ARR targets</div>
+            <div class="field"><label>Target ARR ($) — overwrites B12 value</label><input id="arr-target" type="number" value="4000000" step="1" /></div>
+            <div class="field"><label>Target MoM growth (% / month)</label><input id="arr-mom" type="number" value="20" step="0.1" /></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Funding (up to 3 rounds — Section K)</div>
+            <div class="subhead">Round 1</div>
             <div class="row2">
-                <div class="field"><label>Active Round</label>
-                    <select id="f-round">
-                        <option>Seed $3M</option>
-                        <option>Series A $10M</option>
-                        <option>Series A $20M</option>
-                    </select>
-                </div>
-                <div class="field"><label>Close Date</label><input id="f-date" type="date" /></div>
+                <div class="field"><label>Name</label><input id="fr1-name" type="text" placeholder="Seed" /></div>
+                <div class="field"><label>Amount ($)</label><input id="fr1-amt" type="number" /></div>
             </div>
             <div class="row2">
-                <div class="field"><label>Runway Target (mo)</label><input id="f-runway" type="number" value="18" />
-                </div>
-                <div class="field"><label>Forecast Horizon (mo)</label><input id="f-horizon" type="number" value="24" />
-                </div>
+                <div class="field"><label>Close date</label><input id="fr1-date" type="date" /></div>
+                <div class="field"><label>ARR at close ($)</label><input id="fr1-arr" type="number" /></div>
+            </div>
+            <div class="field"><label>Notes</label><input id="fr1-notes" type="text" /></div>
+            <div class="subhead">Round 2</div>
+            <div class="row2">
+                <div class="field"><label>Name</label><input id="fr2-name" type="text" /></div>
+                <div class="field"><label>Amount ($)</label><input id="fr2-amt" type="number" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Close date</label><input id="fr2-date" type="date" /></div>
+                <div class="field"><label>ARR at close ($)</label><input id="fr2-arr" type="number" /></div>
+            </div>
+            <div class="field"><label>Notes</label><input id="fr2-notes" type="text" /></div>
+            <div class="subhead">Round 3</div>
+            <div class="row2">
+                <div class="field"><label>Name</label><input id="fr3-name" type="text" /></div>
+                <div class="field"><label>Amount ($)</label><input id="fr3-amt" type="number" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Close date</label><input id="fr3-date" type="date" /></div>
+                <div class="field"><label>ARR at close ($)</label><input id="fr3-arr" type="number" /></div>
+            </div>
+            <div class="field"><label>Notes</label><input id="fr3-notes" type="text" /></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">ICP segments (MM row 18, ENT row 19)</div>
+            <p class="json-hint">Percent fields: enter as whole numbers (e.g. 8 for 8% churn).</p>
+            <div class="subhead">Mid-market</div>
+            <div class="row2">
+                <div class="field"><label>Beg. ACV ($)</label><input id="mm-beg" type="number" /></div>
+                <div class="field"><label>Exp. ACV ($)</label><input id="mm-expacv" type="number" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Churn (annual %)</label><input id="mm-churn" type="number" step="0.1" /></div>
+                <div class="field"><label>Expansion (annual %)</label><input id="mm-exp" type="number" step="0.1" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Expansion month</label><input id="mm-expmo" type="number" /></div>
+                <div class="field"><label>CAC ($)</label><input id="mm-cac" type="number" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Lead time (mo)</label><input id="mm-lead" type="number" /></div>
+                <div class="field"><label>Close rate (annual %)</label><input id="mm-close" type="number" step="0.1" /></div>
+            </div>
+            <div class="subhead">Enterprise</div>
+            <div class="row2">
+                <div class="field"><label>Beg. ACV ($)</label><input id="ent-beg" type="number" /></div>
+                <div class="field"><label>Exp. ACV ($)</label><input id="ent-expacv" type="number" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Churn (annual %)</label><input id="ent-churn" type="number" step="0.1" /></div>
+                <div class="field"><label>Expansion (annual %)</label><input id="ent-exp" type="number" step="0.1" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Expansion month</label><input id="ent-expmo" type="number" /></div>
+                <div class="field"><label>CAC ($)</label><input id="ent-cac" type="number" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>Lead time (mo)</label><input id="ent-lead" type="number" /></div>
+                <div class="field"><label>Close rate (annual %)</label><input id="ent-close" type="number" step="0.1" /></div>
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title">Segment Assumptions</div>
-            <table class="seg-table">
-                <tr>
-                    <th></th>
-                    <th>ACV ($)</th>
-                    <th>Cycle (mo)</th>
-                    <th>Churn %</th>
-                    <th>Expan %</th>
-                </tr>
-                <tr>
-                    <td class="seg-label">ENT</td>
-                    <td><input id="ent-acv" type="number" value="60000" /></td>
-                    <td><input id="ent-cyc" type="number" value="6" /></td>
-                    <td><input id="ent-chu" type="number" value="5" /></td>
-                    <td><input id="ent-exp" type="number" value="15" /></td>
-                </tr>
-                <tr>
-                    <td class="seg-label">MM</td>
-                    <td><input id="mm-acv" type="number" value="18000" /></td>
-                    <td><input id="mm-cyc" type="number" value="3" /></td>
-                    <td><input id="mm-chu" type="number" value="8" /></td>
-                    <td><input id="mm-exp" type="number" value="10" /></td>
-                </tr>
-                <tr>
-                    <td class="seg-label">SMB</td>
-                    <td><input id="smb-acv" type="number" value="4800" /></td>
-                    <td><input id="smb-cyc" type="number" value="1" /></td>
-                    <td><input id="smb-chu" type="number" value="15" /></td>
-                    <td><input id="smb-exp" type="number" value="5" /></td>
-                </tr>
-            </table>
+            <div class="section-title">Logo MoM growth — B39</div>
+            <div class="field"><label>Month-over-month growth (%)</label><input id="logo-mom" type="number" value="5" step="0.1" /></div>
         </div>
 
         <div class="section">
-            <div class="section-title">New Logo Ramp (logos/mo)</div>
-            <table class="seg-table">
-                <tr>
-                    <th></th>
-                    <th>Mo 1-6</th>
-                    <th>Mo 7-12</th>
-                    <th>Mo 13-18</th>
-                    <th>Mo 19-24</th>
-                </tr>
-                <tr>
-                    <td class="seg-label">ENT</td>
-                    <td><input id="er1" type="number" value="0" /></td>
-                    <td><input id="er2" type="number" value="1" /></td>
-                    <td><input id="er3" type="number" value="2" /></td>
-                    <td><input id="er4" type="number" value="3" /></td>
-                </tr>
-                <tr>
-                    <td class="seg-label">MM</td>
-                    <td><input id="mr1" type="number" value="1" /></td>
-                    <td><input id="mr2" type="number" value="2" /></td>
-                    <td><input id="mr3" type="number" value="4" /></td>
-                    <td><input id="mr4" type="number" value="6" /></td>
-                </tr>
-                <tr>
-                    <td class="seg-label">SMB</td>
-                    <td><input id="sr1" type="number" value="2" /></td>
-                    <td><input id="sr2" type="number" value="5" /></td>
-                    <td><input id="sr3" type="number" value="10" /></td>
-                    <td><input id="sr4" type="number" value="15" /></td>
-                </tr>
-            </table>
+            <div class="section-title">Maintenance ratios (accounts / person)</div>
+            <div class="row3">
+                <div class="field"><label>AE</label><input id="mnt-ae" type="number" /></div>
+                <div class="field"><label>FDE</label><input id="mnt-fde" type="number" /></div>
+                <div class="field"><label>CSM</label><input id="mnt-csm" type="number" /></div>
+            </div>
         </div>
 
         <div class="section">
-            <div class="section-title">Headcount & Costs</div>
-            <table class="seg-table">
-                <tr>
-                    <th></th>
-                    <th>Start HC</th>
-                    <th>Trigger ($ARR)</th>
-                    <th>Cost/yr ($)</th>
-                </tr>
-                <tr>
-                    <td class="seg-label">Eng</td>
-                    <td><input id="hc-eng-s" type="number" value="4" /></td>
-                    <td><input id="hc-eng-t" type="number" value="500000" /></td>
-                    <td><input id="hc-eng-c" type="number" value="180000" /></td>
-                </tr>
-                <tr>
-                    <td class="seg-label">Sales</td>
-                    <td><input id="hc-sal-s" type="number" value="1" /></td>
-                    <td><input id="hc-sal-t" type="number" value="200000" /></td>
-                    <td><input id="hc-sal-c" type="number" value="120000" /></td>
-                </tr>
-                <tr>
-                    <td class="seg-label">CS</td>
-                    <td><input id="hc-cs-s" type="number" value="1" /></td>
-                    <td><input id="hc-cs-t" type="number" value="100000" /></td>
-                    <td><input id="hc-cs-c" type="number" value="90000" /></td>
-                </tr>
-                <tr>
-                    <td class="seg-label">G&A</td>
-                    <td><input id="hc-ga-s" type="number" value="2" /></td>
-                    <td><input id="hc-ga-t" type="number" value="500000" /></td>
-                    <td><input id="hc-ga-c" type="number" value="100000" /></td>
-                </tr>
-            </table>
-            <div class="row2" style="margin-top:8px">
-                <div class="field"><label>Sales Commission (%)</label><input id="commission" type="number" value="10" />
-                </div>
-                <div class="field"><label>Infra / customer / mo ($)</label><input id="infra" type="number" value="50" />
-                </div>
+            <div class="section-title">Department defaults (rows 47–50)</div>
+            <p class="json-hint">Start HC, annual salary, SW/mo, HW one-time, insurance/mo</p>
+            <div class="subhead">Engineering</div>
+            <div class="row2">
+                <div class="field"><label>Start HC</label><input id="d-eng-hc" type="number" /></div>
+                <div class="field"><label>Annual salary ($)</label><input id="d-eng-sal" type="number" /></div>
             </div>
             <div class="row2">
-                <div class="field"><label>Tooling / eng / mo ($)</label><input id="tooling" type="number" value="200" />
-                </div>
-                <div class="field"><label>Office / emp / mo ($)</label><input id="office" type="number" value="100" />
-                </div>
+                <div class="field"><label>SW / mo ($)</label><input id="d-eng-sw" type="number" /></div>
+                <div class="field"><label>HW one-time ($)</label><input id="d-eng-hw" type="number" /></div>
             </div>
-            <div class="field"><label>Marketing (% of raise)</label><input id="marketing" type="number" value="5" />
+            <div class="field"><label>Insurance / mo ($)</label><input id="d-eng-ins" type="number" /></div>
+            <div class="subhead">Sales</div>
+            <div class="row2">
+                <div class="field"><label>Start HC</label><input id="d-sal-hc" type="number" /></div>
+                <div class="field"><label>Annual salary ($)</label><input id="d-sal-sal" type="number" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>SW / mo ($)</label><input id="d-sal-sw" type="number" /></div>
+                <div class="field"><label>HW one-time ($)</label><input id="d-sal-hw" type="number" /></div>
+            </div>
+            <div class="field"><label>Insurance / mo ($)</label><input id="d-sal-ins" type="number" /></div>
+            <div class="subhead">CS / FDE-CSE</div>
+            <div class="row2">
+                <div class="field"><label>Start HC</label><input id="d-cs-hc" type="number" /></div>
+                <div class="field"><label>Annual salary ($)</label><input id="d-cs-sal" type="number" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>SW / mo ($)</label><input id="d-cs-sw" type="number" /></div>
+                <div class="field"><label>HW one-time ($)</label><input id="d-cs-hw" type="number" /></div>
+            </div>
+            <div class="field"><label>Insurance / mo ($)</label><input id="d-cs-ins" type="number" /></div>
+            <div class="subhead">G&amp;A</div>
+            <div class="row2">
+                <div class="field"><label>Start HC</label><input id="d-ga-hc" type="number" /></div>
+                <div class="field"><label>Annual salary ($)</label><input id="d-ga-sal" type="number" /></div>
+            </div>
+            <div class="row2">
+                <div class="field"><label>SW / mo ($)</label><input id="d-ga-sw" type="number" /></div>
+                <div class="field"><label>HW one-time ($)</label><input id="d-ga-hw" type="number" /></div>
+            </div>
+            <div class="field"><label>Insurance / mo ($)</label><input id="d-ga-ins" type="number" /></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Marketing (annual $)</div>
+            <div class="row2">
+                <div class="field"><label>Events — B66</label><input id="mk-ev" type="number" /></div>
+                <div class="field"><label>Digital — B67</label><input id="mk-dig" type="number" /></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Infrastructure</div>
+            <div class="row2">
+                <div class="field"><label>Infra / customer / mo ($) — B71</label><input id="inf-cust" type="number" /></div>
+                <div class="field"><label>Tooling / eng / mo ($) — B72</label><input id="inf-tool" type="number" /></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Sales comp</div>
+            <div class="row2">
+                <div class="field"><label>Commission (% of 1st-yr ACV)</label><input id="sl-comm" type="number" value="10" step="0.1" /></div>
+                <div class="field"><label>Accelerator (above quota %)</label><input id="sl-acc" type="number" value="15" step="0.1" /></div>
             </div>
         </div>
 
@@ -434,9 +500,6 @@
     <div id="status" class="status"></div>
 
     <script>
-        // Set today's date as default
-        document.getElementById("f-date").value = new Date().toISOString().split("T")[0];
-
         function switchTab(name) {
             document.querySelectorAll(".tab").forEach((t, i) => {
                 t.classList.toggle("active", ["form", "json", "export"][i] === name);
@@ -449,40 +512,202 @@
 
         function n(id) { return Number(document.getElementById(id).value) || 0; }
         function v(id) { return document.getElementById(id).value; }
+        function pct(id) { return n(id) / 100; }
 
+        function fundingRowsFromForm() {
+            var rounds = [];
+            for (var i = 1; i <= 3; i++) {
+                var name = String(v("fr" + i + "-name") || "").trim();
+                if (!name) continue;
+                rounds.push({
+                    name: name,
+                    amount: n("fr" + i + "-amt"),
+                    closeDate: v("fr" + i + "-date") || "",
+                    expectedARR: n("fr" + i + "-arr"),
+                    notes: v("fr" + i + "-notes") || ""
+                });
+            }
+            return rounds;
+        }
+
+        /** Builds JSON matching ScenarioSidebar.gs applyScenario (v3.1). Omits positions — sheet rows unchanged. */
         function buildFromForm() {
+            var g = pct("logo-mom");
             return {
                 meta: {
-                    name: v("f-name"),
-                    activeScenario: v("f-round"),
-                    closeDate: v("f-date"),
-                    runwayTarget: n("f-runway"),
-                    forecastHorizon: n("f-horizon"),
+                    name: v("m-name") || "Scenario",
+                    forecastHorizon: n("m-horizon")
+                },
+                fundingRounds: fundingRowsFromForm(),
+                arrTargets: {
+                    targetARR: n("arr-target"),
+                    momGrowthRate: pct("arr-mom")
                 },
                 segments: {
-                    enterprise: { acv: n("ent-acv"), salesCycle: n("ent-cyc"), churnRate: n("ent-chu") / 100, expansionRate: n("ent-exp") / 100 },
-                    midMarket: { acv: n("mm-acv"), salesCycle: n("mm-cyc"), churnRate: n("mm-chu") / 100, expansionRate: n("mm-exp") / 100 },
-                    smb: { acv: n("smb-acv"), salesCycle: n("smb-cyc"), churnRate: n("smb-chu") / 100, expansionRate: n("smb-exp") / 100 },
+                    midMarket: {
+                        begACV: n("mm-beg"),
+                        expACV: n("mm-expacv"),
+                        churnRate: pct("mm-churn"),
+                        expansionRate: pct("mm-exp"),
+                        expansionMonth: n("mm-expmo"),
+                        cac: n("mm-cac"),
+                        leadTime: n("mm-lead"),
+                        closeRate: pct("mm-close")
+                    },
+                    enterprise: {
+                        begACV: n("ent-beg"),
+                        expACV: n("ent-expacv"),
+                        churnRate: pct("ent-churn"),
+                        expansionRate: pct("ent-exp"),
+                        expansionMonth: n("ent-expmo"),
+                        cac: n("ent-cac"),
+                        leadTime: n("ent-lead"),
+                        closeRate: pct("ent-close")
+                    }
                 },
                 logoRamp: {
-                    enterprise: [n("er1"), n("er2"), n("er3"), n("er4")],
-                    midMarket: [n("mr1"), n("mr2"), n("mr3"), n("mr4")],
-                    smb: [n("sr1"), n("sr2"), n("sr3"), n("sr4")],
+                    midMarket: [g, 0, 0, 0],
+                    enterprise: [g, 0, 0, 0]
+                },
+                maintenanceRatios: {
+                    aePerAccounts: n("mnt-ae"),
+                    fdePerAccounts: n("mnt-fde"),
+                    csmPerAccounts: n("mnt-csm")
                 },
                 headcount: {
-                    engineering: { startHC: n("hc-eng-s"), hireTrigger: n("hc-eng-t"), annualCost: n("hc-eng-c") },
-                    sales: { startHC: n("hc-sal-s"), hireTrigger: n("hc-sal-t"), annualCost: n("hc-sal-c") },
-                    csSupport: { startHC: n("hc-cs-s"), hireTrigger: n("hc-cs-t"), annualCost: n("hc-cs-c") },
-                    gAndA: { startHC: n("hc-ga-s"), hireTrigger: n("hc-ga-t"), annualCost: n("hc-ga-c") },
+                    deptDefaults: {
+                        engineering: {
+                            startHC: n("d-eng-hc"),
+                            annualSalary: n("d-eng-sal"),
+                            swCostPerMo: n("d-eng-sw"),
+                            hwCostOneTime: n("d-eng-hw"),
+                            insurancePerMo: n("d-eng-ins")
+                        },
+                        sales: {
+                            startHC: n("d-sal-hc"),
+                            annualSalary: n("d-sal-sal"),
+                            swCostPerMo: n("d-sal-sw"),
+                            hwCostOneTime: n("d-sal-hw"),
+                            insurancePerMo: n("d-sal-ins")
+                        },
+                        csSupport: {
+                            startHC: n("d-cs-hc"),
+                            annualSalary: n("d-cs-sal"),
+                            swCostPerMo: n("d-cs-sw"),
+                            hwCostOneTime: n("d-cs-hw"),
+                            insurancePerMo: n("d-cs-ins")
+                        },
+                        gAndA: {
+                            startHC: n("d-ga-hc"),
+                            annualSalary: n("d-ga-sal"),
+                            swCostPerMo: n("d-ga-sw"),
+                            hwCostOneTime: n("d-ga-hw"),
+                            insurancePerMo: n("d-ga-ins")
+                        }
+                    }
                 },
-                salesCommission: n("commission") / 100,
-                costs: {
-                    infraPerCustomerPerMonth: n("infra"),
-                    toolingPerEngineerPerMonth: n("tooling"),
-                    officeMiscPerEmployeePerMonth: n("office"),
-                    marketingPctOfRaise: n("marketing") / 100,
+                marketing: {
+                    eventsAnnual: n("mk-ev"),
+                    digitalAnnual: n("mk-dig")
+                },
+                infrastructure: {
+                    infraPerCustomerPerMo: n("inf-cust"),
+                    toolingPerEngineerPerMo: n("inf-tool")
+                },
+                sales: {
+                    commission: pct("sl-comm"),
+                    accelerator: pct("sl-acc")
                 }
             };
+        }
+
+        function pctDisplay(x) {
+            if (x === null || x === undefined || x === "") return "";
+            return Math.round(Number(x) * 100000) / 1000;
+        }
+
+        function fillFormFromData(d) {
+            if (!d) {
+                setStatus("No data returned.", true);
+                return;
+            }
+            document.getElementById("m-name").value = d.meta && d.meta.name ? d.meta.name : "";
+            document.getElementById("m-horizon").value = d.meta && d.meta.forecastHorizon != null ? d.meta.forecastHorizon : 24;
+            if (d.arrTargets) {
+                document.getElementById("arr-target").value = d.arrTargets.targetARR != null ? d.arrTargets.targetARR : "";
+                document.getElementById("arr-mom").value = pctDisplay(d.arrTargets.momGrowthRate);
+            }
+            for (var r = 1; r <= 3; r++) {
+                var round = d.fundingRounds && d.fundingRounds[r - 1];
+                document.getElementById("fr" + r + "-name").value = round && round.name ? round.name : "";
+                document.getElementById("fr" + r + "-amt").value = round && round.amount != null ? round.amount : "";
+                document.getElementById("fr" + r + "-date").value = round && round.closeDate
+                    ? String(round.closeDate).slice(0, 10)
+                    : "";
+                document.getElementById("fr" + r + "-arr").value = round && round.expectedARR != null ? round.expectedARR : "";
+                document.getElementById("fr" + r + "-notes").value = round && round.notes ? round.notes : "";
+            }
+            var mm = d.segments && d.segments.midMarket;
+            if (mm) {
+                document.getElementById("mm-beg").value = mm.begACV != null ? mm.begACV : "";
+                document.getElementById("mm-expacv").value = mm.expACV != null ? mm.expACV : "";
+                document.getElementById("mm-churn").value = pctDisplay(mm.churnRate);
+                document.getElementById("mm-exp").value = pctDisplay(mm.expansionRate);
+                document.getElementById("mm-expmo").value = mm.expansionMonth != null ? mm.expansionMonth : "";
+                document.getElementById("mm-cac").value = mm.cac != null ? mm.cac : "";
+                document.getElementById("mm-lead").value = mm.leadTime != null ? mm.leadTime : "";
+                document.getElementById("mm-close").value = pctDisplay(mm.closeRate);
+            }
+            var ent = d.segments && d.segments.enterprise;
+            if (ent) {
+                document.getElementById("ent-beg").value = ent.begACV != null ? ent.begACV : "";
+                document.getElementById("ent-expacv").value = ent.expACV != null ? ent.expACV : "";
+                document.getElementById("ent-churn").value = pctDisplay(ent.churnRate);
+                document.getElementById("ent-exp").value = pctDisplay(ent.expansionRate);
+                document.getElementById("ent-expmo").value = ent.expansionMonth != null ? ent.expansionMonth : "";
+                document.getElementById("ent-cac").value = ent.cac != null ? ent.cac : "";
+                document.getElementById("ent-lead").value = ent.leadTime != null ? ent.leadTime : "";
+                document.getElementById("ent-close").value = pctDisplay(ent.closeRate);
+            }
+            var lr = d.logoRamp && d.logoRamp.midMarket && d.logoRamp.midMarket[0];
+            document.getElementById("logo-mom").value = lr != null ? pctDisplay(lr) : "5";
+            var mr = d.maintenanceRatios || {};
+            document.getElementById("mnt-ae").value = mr.aePerAccounts != null ? mr.aePerAccounts : "";
+            document.getElementById("mnt-fde").value = mr.fdePerAccounts != null ? mr.fdePerAccounts : "";
+            document.getElementById("mnt-csm").value = mr.csmPerAccounts != null ? mr.csmPerAccounts : "";
+            var dd = d.headcount && d.headcount.deptDefaults;
+            if (dd) {
+                function fillDept(prefix, o) {
+                    if (!o) return;
+                    document.getElementById("d-" + prefix + "-hc").value = o.startHC != null ? o.startHC : "";
+                    document.getElementById("d-" + prefix + "-sal").value = o.annualSalary != null ? o.annualSalary : "";
+                    document.getElementById("d-" + prefix + "-sw").value = o.swCostPerMo != null ? o.swCostPerMo : "";
+                    document.getElementById("d-" + prefix + "-hw").value = o.hwCostOneTime != null ? o.hwCostOneTime : "";
+                    document.getElementById("d-" + prefix + "-ins").value = o.insurancePerMo != null ? o.insurancePerMo : "";
+                }
+                fillDept("eng", dd.engineering);
+                fillDept("sal", dd.sales);
+                fillDept("cs", dd.csSupport);
+                fillDept("ga", dd.gAndA);
+            }
+            var mk = d.marketing || {};
+            document.getElementById("mk-ev").value = mk.eventsAnnual != null ? mk.eventsAnnual : "";
+            document.getElementById("mk-dig").value = mk.digitalAnnual != null ? mk.digitalAnnual : "";
+            var inf = d.infrastructure || {};
+            document.getElementById("inf-cust").value = inf.infraPerCustomerPerMo != null ? inf.infraPerCustomerPerMo : "";
+            document.getElementById("inf-tool").value = inf.toolingPerEngineerPerMo != null ? inf.toolingPerEngineerPerMo : "";
+            var sl = d.sales || {};
+            document.getElementById("sl-comm").value = pctDisplay(sl.commission);
+            document.getElementById("sl-acc").value = pctDisplay(sl.accelerator);
+            setStatus("Form loaded from current sheet.", false);
+        }
+
+        function prefillFromSheet() {
+            setStatus("Reading Drivers…", false);
+            google.script.run
+                .withSuccessHandler(fillFormFromData)
+                .withFailureHandler(err => setStatus("❌ " + err.message, true))
+                .getCurrentScenario();
         }
 
         function setStatus(msg, isErr) {
@@ -534,7 +759,7 @@
         function investorEnter() {
             setStatus("⏳ Applying investor view…", false);
             google.script.run
-                .withSuccessHandler(() => setStatus("✓ Internal tabs hidden. Summary selected. (Toast also on sheet.)", false))
+                .withSuccessHandler(() => setStatus("✓ Investor view applied. For investors tab selected (toast on sheet).", false))
                 .withFailureHandler(err => setStatus("❌ " + err.message, true))
                 .showInvestorView();
         }

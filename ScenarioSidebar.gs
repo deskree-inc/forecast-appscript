@@ -31,7 +31,7 @@ function runSetupFromMenu() {
 function openScenarioSidebar() {
   const html = HtmlService.createHtmlOutputFromFile("ScenarioSidebarView")
     .setTitle("Tetrix Scenario Loader")
-    .setWidth(340);
+    .setWidth(400);
   SpreadsheetApp.getUi().showSidebar(html);
 }
 
@@ -135,19 +135,21 @@ function applyScenario(data) {
     sh.getRange(row, 6).setValue(dept.insurancePerMo);
   });
 
-  // ── Individual Positions (rows 54–63; header row 53)
-  var positions = data.headcount.positions || [];
-  for (var pi = 0; pi < 10; pi++) {
-    var pr = 54 + pi;
-    var pos = positions[pi];
-    if (pos) {
-      sh.getRange(pr, 1).setValue(pos.title || "");
-      sh.getRange(pr, 2).setValue(pos.dept || "");
-      sh.getRange(pr, 3).setValue(pos.startDate ? new Date(pos.startDate) : "");
-      sh.getRange(pr, 4).setValue(pos.annualSalary || "");
-      sh.getRange(pr, 5).setValue(pos.swCostPerMo || "");
-    } else {
-      [1, 2, 3, 4, 5].forEach(function (c) { sh.getRange(pr, c).clearContent(); });
+  // ── Individual Positions — only if JSON includes positions[] (form load omits = keep existing rows)
+  if (data.headcount && Array.isArray(data.headcount.positions)) {
+    var positions = data.headcount.positions;
+    for (var pi = 0; pi < 10; pi++) {
+      var pr = 54 + pi;
+      var pos = positions[pi];
+      if (pos) {
+        sh.getRange(pr, 1).setValue(pos.title || "");
+        sh.getRange(pr, 2).setValue(pos.dept || "");
+        sh.getRange(pr, 3).setValue(pos.startDate ? new Date(pos.startDate) : "");
+        sh.getRange(pr, 4).setValue(pos.annualSalary || "");
+        sh.getRange(pr, 5).setValue(pos.swCostPerMo || "");
+      } else {
+        [1, 2, 3, 4, 5].forEach(function (c) { sh.getRange(pr, c).clearContent(); });
+      }
     }
   }
 

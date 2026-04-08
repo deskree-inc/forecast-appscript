@@ -50,7 +50,7 @@ Use **Enter investor view** before screen sharing or when you want recipients to
 
 ## Scenario sidebar
 
-The loader writes and reads the **v3.1** Drivers layout (see `ModelConstants.gs` → `DR`): **funding rounds** (up to three), **ARR targets** and horizon, **segment** economics (MM/ENT), **logo growth** (single cell `B39`; JSON still exposes a 4-slot ramp for compatibility), **maintenance ratios**, **headcount** department defaults and up to **ten named positions**, plus **marketing**, **infrastructure**, and **sales** fields. The HTML file name in Apps Script must stay **`ScenarioSidebarView`** (matching `createHtmlOutputFromFile("ScenarioSidebarView")`).
+The loader writes and reads the **v3.1** Drivers layout (see `ModelConstants.gs` → `DR`): **funding rounds** (up to three), **ARR targets** and horizon, **segment** economics (MM/ENT), **logo growth** (single cell `B39`; JSON still exposes a 4-slot ramp for compatibility), **maintenance ratios**, **headcount** department defaults and up to **ten named positions**, plus **marketing**, **infrastructure**, and **sales** fields. The **form** tab mirrors those fields (no SMB segment, no legacy hire triggers); use **JSON** or **Export** for full fidelity including **individual positions**. The HTML file name in Apps Script must stay **`ScenarioSidebarView`** (matching `createHtmlOutputFromFile("ScenarioSidebarView")`).
 
 ## Setup in Google Sheets
 

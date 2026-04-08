@@ -10,11 +10,6 @@ function setupDrivers(ss) {
     .setFontSize(12).setHorizontalAlignment("center").setVerticalAlignment("middle");
   sh.setRowHeight(1,36);
 
-  sh.getRange(3,1,1,9).merge()
-    .setValue("A — Funding Rounds → moved to Section K at the bottom of this tab.")
-    .setBackground("#FEF9E7").setFontStyle("italic").setFontColor("#888").setWrap(true);
-  sh.setRowHeight(3,28);
-
   function note3(row, text, span) {
     var rng = sh.getRange(row, 3, 1, span || 1);
     if (span && span > 1) rng.merge();
