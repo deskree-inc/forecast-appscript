@@ -7,7 +7,25 @@ function onOpen() {
     .createMenu("📊 Tetrix")
     .addItem("Open Scenario Loader", "openScenarioSidebar")
     .addItem("🚦 Check Benchmarks",  "runBenchmarks")
+    .addItem("🔧 Rebuild model (run setup)…", "runSetupFromMenu")
+    .addSeparator()
+    .addItem("Enter investor view (hide internal tabs)", "showInvestorView")
+    .addItem("Show all internal sheets", "showInternalSheets")
     .addToUi();
+}
+
+/**
+ * Runs setupFinancialModel() after confirmation (same as running it in the Apps Script editor).
+ */
+function runSetupFromMenu() {
+  var ui = SpreadsheetApp.getUi();
+  var r = ui.alert(
+    "Rebuild financial model?",
+    "This runs setupFinancialModel(). It clears and rebuilds the model tabs (Instructions, Drivers, Revenue, etc.).\n\nContinue?",
+    ui.ButtonSet.YES_NO
+  );
+  if (r !== ui.Button.YES) return;
+  setupFinancialModel();
 }
 
 function openScenarioSidebar() {

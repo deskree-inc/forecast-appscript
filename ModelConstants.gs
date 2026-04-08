@@ -1,6 +1,9 @@
 // ModelConstants.gs — sheet row/column maps (DR, PNL, CF, …). Shared by Setup*.gs, Benchmarks.gs.
 // Tetrix Financial Model v3.1 — run setupFinancialModel() from SetupMain.gs.
 
+/** Reader-facing tab built by setupInvestorBrief(); opened in Tetrix investor view. */
+var SHEET_INVESTOR_BRIEF = "📋 For investors";
+
 var DR = {
   TARGET_ARR: "B12", MOM_GROWTH: "B13", HORIZON: "B14",
   MM_ROW: 18, ENT_ROW: 19,

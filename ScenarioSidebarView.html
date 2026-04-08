@@ -236,6 +236,17 @@
             color: #202124;
             margin-top: 8px;
         }
+
+        .investor-hint {
+            font-size: 11px;
+            color: #5f6368;
+            margin-bottom: 8px;
+            line-height: 1.35;
+        }
+
+        .investor-strip .btn {
+            margin-top: 0;
+        }
     </style>
 </head>
 
@@ -248,6 +259,15 @@
         <div class="tab active" onclick="switchTab('form')">📝 Form</div>
         <div class="tab" onclick="switchTab('json')">{ } JSON</div>
         <div class="tab" onclick="switchTab('export')">⬆️ Export</div>
+    </div>
+
+    <div class="section investor-strip">
+        <div class="section-title">Investor view</div>
+        <p class="investor-hint">Hides internal tabs and Instructions; opens &ldquo;For investors&rdquo; (how to read). Editors can still unhide.</p>
+        <div class="row2">
+            <button type="button" class="btn btn-secondary" onclick="investorEnter()">Hide internal</button>
+            <button type="button" class="btn btn-secondary" onclick="investorRestore()">Show internal</button>
+        </div>
     </div>
 
     <!-- ── FORM PANEL ─────────────────────────────────────── -->
@@ -509,6 +529,22 @@
                 })
                 .withFailureHandler(err => setStatus("❌ " + err.message, true))
                 .getCurrentScenario();
+        }
+
+        function investorEnter() {
+            setStatus("⏳ Applying investor view…", false);
+            google.script.run
+                .withSuccessHandler(() => setStatus("✓ Internal tabs hidden. Summary selected. (Toast also on sheet.)", false))
+                .withFailureHandler(err => setStatus("❌ " + err.message, true))
+                .showInvestorView();
+        }
+
+        function investorRestore() {
+            setStatus("⏳ Restoring tabs…", false);
+            google.script.run
+                .withSuccessHandler(() => setStatus("✓ Internal tabs visible again.", false))
+                .withFailureHandler(err => setStatus("❌ " + err.message, true))
+                .showInternalSheets();
         }
     </script>
 </body>

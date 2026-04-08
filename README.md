@@ -9,9 +9,10 @@ Google Apps Script project used to **build and run financial forecasting for Des
 | `SetupMain.gs` | `setupFinancialModel()` — orchestrates setup; logs each phase to **Logger** (Executions / View → Logs). Set `SETUP_PROGRESS_TOAST = true` for sheet toasts. |
 | `ModelConstants.gs` | Shared maps: `DR`, `REVCOLS`, `PNL`, `CF`, `SUM`, etc. (used by setup + `benchmarks.gs`). |
 | `SetupHelpers.gs` | Shared layout helpers (`hdr`, `colLetter`, …). |
-| `SetupInstructions.gs`, `SetupDrivers.gs`, `SetupFunding.gs`, `SetupHeadcount.gs`, `SetupRevenue.gs`, `SetupPnL.gs`, `SetupCashFlow.gs`, `SetupSummary.gs`, `SetupBenchmarksTab.gs` | One tab (or tab pair) each; all called from `SetupMain.gs`. |
+| `SetupInstructions.gs`, `SetupInvestorBrief.gs`, `SetupDrivers.gs`, `SetupFunding.gs`, `SetupHeadcount.gs`, `SetupRevenue.gs`, `SetupPnL.gs`, `SetupCashFlow.gs`, `SetupSummary.gs`, `SetupBenchmarksTab.gs` | One tab (or tab pair) each; all called from `SetupMain.gs`. |
 | `ScenarioSidebar.gs` | Custom menu, `applyScenario` / `getCurrentScenario` (**v3.1** Drivers layout, `DR`), and opens the HTML sidebar. |
 | `ScenarioSidebarView.html` | Sidebar UI (hosted as an HTML file in the Apps Script project). |
+| `InvestorView.gs` | `showInvestorView` / `showInternalSheets` — investor mode hides internal tabs + **Instructions**; opens **`📋 For investors`** (built in `SetupInvestorBrief.gs`). |
 | `Benchmarks.gs` | `runBenchmarks()` — reads **Drivers**, **Headcount**, **P&L**, and **Cash flow**, scores key SaaS metrics, and writes results to **🚦 Benchmarks**. |
 
 ## Model overview
@@ -19,6 +20,7 @@ Google Apps Script project used to **build and run financial forecasting for Des
 Running `setupFinancialModel()` builds these sheets:
 
 - **Instructions** — how to use the model (inputs vs formulas) and workflow (including when to run benchmarks).
+- **For investors** — short external-facing guide: how to read Summary / Revenue / P&L / Cash flow, high-level note that the forecast is produced with Deskree’s internal planning model and checked against benchmarks and industry ranges. Shown when entering **investor view**; internal **Instructions** is hidden in that mode.
 - **Drivers** — the **only** tab where you enter assumptions: funding rounds, ARR targets, ICP segments (mid-market & enterprise), logo ramp, maintenance ratios (AE / FDE / CSM), department defaults, individual roles, marketing, infrastructure, and sales comp.
 - **Funding**, **Headcount**, **Revenue**, **P&L**, **Cash flow**, **Summary** — calculated views driven from Drivers.
 - **Scenarios** — scenario comparison / framing.
@@ -32,8 +34,19 @@ From `ScenarioSidebar.gs`, the **📊 Tetrix** menu provides:
 
 1. **Open Scenario Loader** — HTML sidebar to apply a scenario or inspect **current model state** (`getCurrentScenario()`).
 2. **Check Benchmarks** — runs `runBenchmarks()` and fills **🚦 Benchmarks** with traffic-light style checks (e.g. CAC payback, LTV:CAC, implied NRR vs churn/expansion, growth vs Bessemer-style heuristics, ARR vs capital raised, AE account load, gross margin, burn multiple when wired).
+3. **Rebuild model (run setup)…** — confirms, then runs `setupFinancialModel()` (same as in **Extensions → Apps Script**). Clears and rebuilds model tabs; duplicate the file or export data first if you need to keep current values.
+4. **Enter investor view (hide internal tabs)** — hides **Drivers**, **Headcount**, **Funding**, **Benchmarks**, and **Instructions**; opens **`📋 For investors`** (external how-to copy in `SetupInvestorBrief.gs`). Same as the **Investor view** buttons in the sidebar.
+5. **Show all internal sheets** — unhides those tabs and **Instructions**, and activates **Drivers**.
 
 After loading a scenario, the script suggests running **Check Benchmarks** before sharing numbers externally.
+
+### Investor view (same spreadsheet)
+
+Use **Enter investor view** before screen sharing or when you want recipients to start on **`📋 For investors`** (reader guide) and outputs (**Summary**, **Revenue**, **P&L**, **Cash flow**) without internal **Instructions** or assumption tabs. **Show all internal sheets** restores **Instructions** and full editing.
+
+- **Customization:** Edit `INVESTOR_INTERNAL_SHEETS` in [`InvestorView.gs`](InvestorView.gs). Edit the narrative on **`📋 For investors`** in [`SetupInvestorBrief.gs`](SetupInvestorBrief.gs) (re-run `setupFinancialModel()` to refresh that tab from code). Tab name is `SHEET_INVESTOR_BRIEF` in [`ModelConstants.gs`](ModelConstants.gs). Do not delete internal tabs manually — formulas on output sheets depend on them; hiding is safe.
+- **Sharing:** Anyone with **edit** access can **unhide** tabs (View → Hidden sheets). Prefer **Viewer** on the file for external audiences if you need stronger presentation control. This is not a substitute for legal/financial redaction.
+- **In-sheet button (optional):** **Insert → Drawing** (or image), save, select it, **⋮ → Assign script** → enter `showInvestorView` or `showInternalSheets` for one-click triggers without opening the sidebar.
 
 ## Scenario sidebar
 
@@ -43,7 +56,7 @@ The loader writes and reads the **v3.1** Drivers layout (see `ModelConstants.gs`
 
 1. Open or create a Google Sheet for Deskree forecasting.
 2. **Extensions → Apps Script** and create or open a project.
-3. Add **all** `.gs` files from this repo (or push via clasp): `SetupMain`, `ModelConstants`, `SetupHelpers`, every `Setup*.gs` tab module, `ScenarioSidebar.gs`, and `Benchmarks.gs`.
+3. Add **all** `.gs` files from this repo (or push via clasp): `SetupMain`, `ModelConstants`, `SetupHelpers`, every `Setup*.gs` tab module (including `SetupInvestorBrief.gs`), `ScenarioSidebar.gs`, `InvestorView.gs`, and `Benchmarks.gs`.
 4. **File → Add file → HTML**, name **`ScenarioSidebarView`**, paste `ScenarioSidebarView.html`.
 5. Save.
 6. Run **`setupFinancialModel`** once and authorize when prompted. If setup hangs, open **Executions** in the script editor and inspect **Logs** for the last completed phase.

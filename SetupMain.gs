@@ -39,6 +39,7 @@ function setupFinancialModel() {
 
   var TABS = [
     { name: "📖 Instructions", color: "#FFFFFF" },
+    { name: SHEET_INVESTOR_BRIEF, color: "#FFFFFF" },
     { name: "🎛️ Drivers",      color: "#4A90D9" },
     { name: "💰 Funding",      color: "#27AE60" },
     { name: "👥 Headcount",    color: "#8E44AD" },
@@ -59,6 +60,7 @@ function setupFinancialModel() {
   });
 
   runPhase("setupInstructions", function() { setupInstructions(ss); });
+  runPhase("setupInvestorBrief", function() { setupInvestorBrief(ss); });
   runPhase("setupDrivers", function() { setupDrivers(ss); });
   runPhase("setupFunding", function() { setupFunding(ss); });
   runPhase("setupHeadcount", function() { setupHeadcount(ss); });
@@ -69,8 +71,8 @@ function setupFinancialModel() {
   runPhase("setupBenchmarks", function() { setupBenchmarks(ss); });
 
   runPhase("reorder sheets", function() {
-    ["📖 Instructions","📊 Summary","🎛️ Drivers","💰 Funding",
-     "👥 Headcount","📈 Revenue","💸 P&L","🏦 Cash Flow","🚦 Benchmarks"]
+    ["📖 Instructions", SHEET_INVESTOR_BRIEF, "📊 Summary", "🎛️ Drivers", "💰 Funding",
+     "👥 Headcount", "📈 Revenue", "💸 P&L", "🏦 Cash Flow", "🚦 Benchmarks"]
       .forEach(function(name, i) {
         var s = ss.getSheetByName(name);
         if (s) { ss.setActiveSheet(s); ss.moveActiveSheet(i + 1); }
