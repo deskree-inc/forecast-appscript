@@ -6,10 +6,13 @@ Google Apps Script project used to **build and run financial forecasting for Des
 
 | File | Role |
 |------|------|
-| `Setup.gs` | One-shot setup (**v2**): creates tabs, layouts, and formulas for the full financial model, including the **Benchmarks** shell. |
+| `SetupMain.gs` | `setupFinancialModel()` — orchestrates setup; logs each phase to **Logger** (Executions / View → Logs). Set `SETUP_PROGRESS_TOAST = true` for sheet toasts. |
+| `ModelConstants.gs` | Shared maps: `DR`, `REVCOLS`, `PNL`, `CF`, `SUM`, etc. (used by setup + `benchmarks.gs`). |
+| `SetupHelpers.gs` | Shared layout helpers (`hdr`, `colLetter`, …). |
+| `SetupInstructions.gs`, `SetupDrivers.gs`, `SetupFunding.gs`, `SetupHeadcount.gs`, `SetupRevenue.gs`, `SetupPnL.gs`, `SetupCashFlow.gs`, `SetupSummary.gs`, `SetupBenchmarksTab.gs` | One tab (or tab pair) each; all called from `SetupMain.gs`. |
 | `ScenarioSidebar.gs` | Custom menu, `applyScenario` / `getCurrentScenario` (**v2** Drivers layout), and opens the HTML sidebar. |
 | `ScenarioSidebarView.html` | Sidebar UI (hosted as an HTML file in the Apps Script project). |
-| `benchmarks.gs` | `runBenchmarks()` — reads **Drivers**, **Headcount**, **P&L**, and **Cash flow**, scores key SaaS metrics, and writes results to **🚦 Benchmarks**. |
+| `Benchmarks.gs` | `runBenchmarks()` — reads **Drivers**, **Headcount**, **P&L**, and **Cash flow**, scores key SaaS metrics, and writes results to **🚦 Benchmarks**. |
 
 ## Model overview
 
@@ -40,14 +43,11 @@ The loader writes and reads the v2 Drivers layout: **funding rounds** (up to fiv
 
 1. Open or create a Google Sheet for Deskree forecasting.
 2. **Extensions → Apps Script** and create or open a project.
-3. Add files to match this repo:
-   - `Setup.gs`
-   - `ScenarioSidebar.gs`
-   - `benchmarks.gs` (defines `runBenchmarks`, referenced by the Tetrix menu)
-   - **File → Add file → HTML**, name **`ScenarioSidebarView`**, paste `ScenarioSidebarView.html`
-4. Save.
-5. Run **`setupFinancialModel`** once and authorize when prompted.
-6. Reload the spreadsheet; use **📊 Tetrix** for the scenario loader and benchmark check.
+3. Add **all** `.gs` files from this repo (or push via clasp): `SetupMain`, `ModelConstants`, `SetupHelpers`, every `Setup*.gs` tab module, `ScenarioSidebar.gs`, and `Benchmarks.gs`.
+4. **File → Add file → HTML**, name **`ScenarioSidebarView`**, paste `ScenarioSidebarView.html`.
+5. Save.
+6. Run **`setupFinancialModel`** once and authorize when prompted. If setup hangs, open **Executions** in the script editor and inspect **Logs** for the last completed phase.
+7. Reload the spreadsheet; use **📊 Tetrix** for the scenario loader and benchmark check.
 
 ## Development notes
 
