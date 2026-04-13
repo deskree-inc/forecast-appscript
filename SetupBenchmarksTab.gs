@@ -9,7 +9,7 @@ function setupBenchmarks(ss) {
   hdr(sh, 1, 1, "🚦 BENCHMARKS — Reality Check", "#922B21");
   sh.getRange(1, 1, 1, 4).merge();
   sh.getRange(2, 1, 1, 4).merge()
-    .setValue("Run 📊 Tetrix → Check Benchmarks to populate categories, counts, and metric rows.")
+    .setValue("Run " + APP_MENU_LABEL + " → Check Benchmarks to populate categories, counts, and metric rows.")
     .setFontStyle("italic").setFontColor("#888").setWrap(true);
   hdr(sh, 4, 1, "Metric", "#1F618D");
   hdr(sh, 4, 2, "Value", "#1F618D");

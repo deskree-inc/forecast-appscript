@@ -10,16 +10,16 @@ var INVESTOR_INTERNAL_SHEETS = [
 
 /**
  * Full list of tabs hidden in investor presentation mode: internal sheets plus
- * 📖 Instructions (replaced by SHEET_INVESTOR_BRIEF for external readers).
+ * the intro tab (SHEET_INSTRUCTIONS), replaced by SHEET_INVESTOR_BRIEF for external readers.
  */
 function investorPresentationHideList_() {
   var list = INVESTOR_INTERNAL_SHEETS.slice();
-  list.push("📖 Instructions");
+  list.push(SHEET_INSTRUCTIONS);
   return list;
 }
 
 /**
- * Hides internal + Instructions, ensures investor brief is visible, opens brief tab.
+ * Hides internal + intro tab, ensures investor brief is visible, opens brief tab.
  */
 function showInvestorView() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -70,11 +70,11 @@ function showInvestorView() {
   } else {
     msg = "Investor view: tabs were already hidden or not found.";
   }
-  SpreadsheetApp.getActiveSpreadsheet().toast(msg, "Tetrix", 6);
+  SpreadsheetApp.getActiveSpreadsheet().toast(msg, APP_SHORT_NAME, 6);
 }
 
 /**
- * Restores internal sheets and Instructions (idempotent).
+ * Restores internal sheets and the intro tab (idempotent).
  */
 function showInternalSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -91,8 +91,8 @@ function showInternalSheets() {
   if (drv) ss.setActiveSheet(drv);
 
   SpreadsheetApp.getActiveSpreadsheet().toast(
-    shown ? "Restored " + shown + " tab(s) including Instructions." : "Internal tabs were already visible.",
-    "Tetrix",
+    shown ? "Restored " + shown + " tab(s) including " + SHEET_INSTRUCTIONS + "." : "Internal tabs were already visible.",
+    APP_SHORT_NAME,
     4
   );
 }

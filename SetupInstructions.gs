@@ -1,7 +1,7 @@
 // SetupInstructions.gs — Called from setupFinancialModel in SetupMain.gs.
 
 function setupInstructions(ss) {
-  var sh = ss.getSheetByName("📖 Instructions");
+  var sh = ss.getSheetByName(SHEET_INSTRUCTIONS);
   sh.setColumnWidth(1,30); sh.setColumnWidth(2,200);
   sh.setColumnWidth(3,620); sh.setColumnWidth(4,30);
   function title(row,text){sh.getRange(row,1,1,4).merge().setValue(text).setBackground("#1A5276").setFontColor("#FFFFFF").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setVerticalAlignment("middle");sh.setRowHeight(row,40);}
@@ -10,7 +10,7 @@ function setupInstructions(ss) {
   function note(r,text){sh.getRange(r,2,1,2).merge().setValue(text).setFontStyle("italic").setFontColor("#717D7E").setBackground("#FDFEFE").setWrap(true);sh.setRowHeight(r,36);}
   function blank(r){sh.setRowHeight(r,12);}
   var r=1;
-  title(r,"📖 Tetrix Financial Model — How to Use");r++;blank(r);r++;
+  title(r,"📖 Financial model — how to use");r++;blank(r);r++;
   sec(r,"🗺️ Overview");r++;
   sh.getRange(r,2,1,2).merge().setValue("The ONLY tab you type into is 🎛️ Drivers. Everything else is formulas.\n\nHeadcount is fully automated. Revenue logos are back-calculated from Target ARR.").setBackground("#EBF5FB").setWrap(true).setVerticalAlignment("top");sh.setRowHeight(r,90);r++;
   blank(r);r++;sec(r,"🎨 Color Legend");r++;

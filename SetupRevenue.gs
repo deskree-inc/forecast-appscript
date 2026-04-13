@@ -155,8 +155,8 @@ function _buildRevenue(sh) {
       var prevRow = REVROWS.DATA_START + m - 2;
       var mAct     = "MAX(0," + m + "-(" + off + "))";
       var mActPrev = "MAX(0," + (m-1) + "-(" + off + "))";
-      var rndCur  = "MAX(0,ROUND(IF((" + mAct + ")<=0,0," + cumF(mAct) + "),0))";
-      var rndPrev = "MAX(0,ROUND(IF((" + mActPrev + ")<=0,0," + cumF(mActPrev) + "),0))";
+      var rndCur  = "MAX(0,CEILING(IF((" + mAct + ")<=0,0," + cumF(mAct) + "),1))";
+      var rndPrev = "MAX(0,CEILING(IF((" + mActPrev + ")<=0,0," + cumF(mActPrev) + "),1))";
       sh.getRange(row, seg.logosCol)
         .setFormula("=IF(" + m + ">" + HOR + ",\"\",MAX(0," + rndCur + "-" + rndPrev + "))").setNumberFormat("0");
       sh.getRange(row, seg.newArrCol)

@@ -1,6 +1,6 @@
 // ============================================================
 // TETRIX BENCHMARKS — Reality Check (expanded)
-// Menu: 📊 Tetrix → Check Benchmarks
+// Menu: APP_MENU_LABEL → Check Benchmarks (see ModelConstants.gs)
 // Depends on globals from ModelConstants.gs: DR, REV, REVCOLS, PNL, CF
 // ============================================================
 

@@ -170,9 +170,8 @@ function setupDrivers(ss) {
 
   // G
   secHdrStyled(74,"G — Sales Commission");
-  lbl(75,1,"Commission (% of first-year ACV)"); inp(sh,75,2,0.10,"0%");
-  lbl(76,1,"Accelerator (% above quota)");       inp(sh,76,2,0.15,"0%");
-  [75,76].forEach(function(r){sh.setRowHeight(r,22);});
+  lbl(75,1,"Commission (% of new-logo ARR)"); inp(sh,75,2,0.10,"0%");
+  sh.setRowHeight(75,22);
 
   // Legend
   secHdrStyled(78,"Legend");
@@ -252,11 +251,11 @@ function setupDrivers(ss) {
   // ── K — Funding Rounds ─────────────────────────────────────
   // ✏️ CHANGED: Single $7M Seed round, May 2026. Rounds 2 & 3 cleared.
   secHdrStyled(119,"K — Funding Rounds (up to 3) & Interest Rate");
-  ["Round Name","Amount Raised ($)","Close Date","ARR at Close ($)","Notes"].forEach(function(h,i){hdr(sh,120,i+1,h,"#1F618D");});
+  ["Round Name","Amount Raised ($)","Close Date","Notes"].forEach(function(h,i){hdr(sh,120,i+1,h,"#1F618D");});
   sh.setRowHeight(120,22);
-  [  ["Seed",  7000000, new Date("2026-05-01"), 1000000, ""],
-   ["",      "",      "",                    "",       ""],
-   ["",      "",      "",                    "",       ""]]
+  [  ["Seed",  7000000, new Date("2026-05-01"), ""],
+   ["",      "",      "",                    ""],
+   ["",      "",      "",                    ""]]
     .forEach(function(round,i){
       var r=121+i;
       inp(sh,r,1,round[0]);
@@ -264,11 +263,10 @@ function setupDrivers(ss) {
         inp(sh,r,2,round[1],"$#,##0");
         inp(sh,r,3,round[2],"MMM YYYY");
         sh.getRange(r,3).setDataValidation(SpreadsheetApp.newDataValidation().requireDate().setAllowInvalid(false).build());
-        inp(sh,r,4,round[3],"$#,##0");
       } else {
-        [2,3,4].forEach(function(c){sh.getRange(r,c).setBackground("#EBF5FB");});
+        [2,3].forEach(function(c){sh.getRange(r,c).setBackground("#EBF5FB");});
       }
-      inp(sh,r,5,round[4]);
+      inp(sh,r,4,round[3]);
       sh.setRowHeight(r,22);
     });
 
@@ -287,7 +285,7 @@ function setupDrivers(ss) {
   note3(126,"Existing cash in bank on day 1 of forecast. Add any pre-forecast raise here.",3);
   sh.setRowHeight(126,36);
 
-  sh.getRange(128,1,1,5).merge()
+  sh.getRange(128,1,1,4).merge()
     .setValue("Rounds feed the 💰 Funding tab automatically. All fields per round must be fully filled or completely blank.")
     .setFontStyle("italic").setFontColor("#888").setWrap(true);
   sh.setRowHeight(128,36);

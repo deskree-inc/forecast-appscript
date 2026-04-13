@@ -15,11 +15,21 @@ function setupFinancialModel() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   setupLog("begin", ss.getName ? ss.getName() : "(spreadsheet)");
 
+  if (!ss.getSheetByName(SHEET_INSTRUCTIONS)) {
+    for (var li = 0; li < SHEET_INSTRUCTIONS_LEGACY_NAMES.length; li++) {
+      var leg = ss.getSheetByName(SHEET_INSTRUCTIONS_LEGACY_NAMES[li]);
+      if (leg) {
+        leg.setName(SHEET_INSTRUCTIONS);
+        break;
+      }
+    }
+  }
+
   function runPhase(name, fn) {
     var t = Date.now();
     if (SETUP_PROGRESS_TOAST) {
       try {
-        ss.toast("Building: " + name + "…", "Tetrix setup", 4);
+        ss.toast("Building: " + name + "…", APP_SHORT_NAME + " setup", 4);
       } catch (ignore) {}
     }
     setupLog("phase start", name);
@@ -38,7 +48,7 @@ function setupFinancialModel() {
   }
 
   var TABS = [
-    { name: "📖 Instructions", color: "#FFFFFF" },
+    { name: SHEET_INSTRUCTIONS, color: "#FFFFFF" },
     { name: SHEET_INVESTOR_BRIEF, color: "#FFFFFF" },
     { name: "🎛️ Drivers",      color: "#4A90D9" },
     { name: "💰 Funding",      color: "#27AE60" },
@@ -71,13 +81,13 @@ function setupFinancialModel() {
   runPhase("setupBenchmarks", function() { setupBenchmarks(ss); });
 
   runPhase("reorder sheets", function() {
-    ["📖 Instructions", SHEET_INVESTOR_BRIEF, "📊 Summary", "🎛️ Drivers", "💰 Funding",
+    [SHEET_INSTRUCTIONS, SHEET_INVESTOR_BRIEF, "📊 Summary", "🎛️ Drivers", "💰 Funding",
      "👥 Headcount", "📈 Revenue", "💸 P&L", "🏦 Cash Flow", "🚦 Benchmarks"]
       .forEach(function(name, i) {
         var s = ss.getSheetByName(name);
         if (s) { ss.setActiveSheet(s); ss.moveActiveSheet(i + 1); }
       });
-    ss.setActiveSheet(ss.getSheetByName("📖 Instructions"));
+    ss.setActiveSheet(ss.getSheetByName(SHEET_INSTRUCTIONS));
   });
 
   runPhase("cleanup legacy sheets", function() {

@@ -7,22 +7,22 @@ function setupFunding(ss) {
   var FS  = "'🎛️ Drivers'!"+DR.FORECAST_START;
 
   sh.setColumnWidth(1,210); sh.setColumnWidth(2,160); sh.setColumnWidth(3,130);
-  sh.setColumnWidth(4,160); sh.setColumnWidth(5,280);
+  sh.setColumnWidth(4,300); sh.setColumnWidth(5,160);
 
-  hdr(sh,1,1,"💰 FUNDING — Rounds & Monthly Cash Schedule","#1A5276"); sh.getRange(1,1,1,5).merge();
-  sh.getRange(2,1,1,5).merge().setValue("All inputs in 🎛️ Drivers Section K. This tab is fully auto-calculated — do not edit.").setFontStyle("italic").setFontColor("#888");
+  hdr(sh,1,1,"💰 FUNDING — Rounds & Monthly Cash Schedule","#1A5276"); sh.getRange(1,1,1,4).merge();
+  sh.getRange(2,1,1,4).merge().setValue("All inputs in 🎛️ Drivers Section K. This tab is fully auto-calculated — do not edit.").setFontStyle("italic").setFontColor("#888");
 
-  sh.getRange(3,1,1,5).merge().setValue("📋 FUNDING ROUNDS").setBackground("#2C3E50").setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(10);
-  ["Round Name","Amount Raised ($)","Close Date","ARR at Close ($)","Notes"].forEach(function(h,i){hdr(sh,4,i+1,h,"#1F618D");});
-  [[DR.ROUND1_NAME,DR.ROUND1_AMT,DR.ROUND1_DATE,DR.ROUND1_ARR],
-   [DR.ROUND2_NAME,DR.ROUND2_AMT,DR.ROUND2_DATE,DR.ROUND2_ARR],
-   [DR.ROUND3_NAME,DR.ROUND3_AMT,DR.ROUND3_DATE,DR.ROUND3_ARR]]
+  sh.getRange(3,1,1,4).merge().setValue("📋 FUNDING ROUNDS").setBackground("#2C3E50").setFontColor("#FFFFFF").setFontWeight("bold").setFontSize(10);
+  ["Round Name","Amount Raised ($)","Close Date","Notes"].forEach(function(h,i){hdr(sh,4,i+1,h,"#1F618D");});
+  [[DR.ROUND1_NAME,DR.ROUND1_AMT,DR.ROUND1_DATE,DR.ROUND1_NOTES],
+   [DR.ROUND2_NAME,DR.ROUND2_AMT,DR.ROUND2_DATE,DR.ROUND2_NOTES],
+   [DR.ROUND3_NAME,DR.ROUND3_AMT,DR.ROUND3_DATE,DR.ROUND3_NOTES]]
     .forEach(function(round,i){
       var r=5+i;
       sh.getRange(r,1).setFormula("='🎛️ Drivers'!"+round[0]).setBackground("#F2F3F4");
       sh.getRange(r,2).setFormula("=IFERROR(IF('🎛️ Drivers'!"+round[1]+"=\"\",\"\",VALUE('🎛️ Drivers'!"+round[1]+")),\"\")").setNumberFormat("$#,##0").setBackground("#F2F3F4");
       sh.getRange(r,3).setFormula("=IFERROR(IF(ISNUMBER('🎛️ Drivers'!"+round[2]+"),'🎛️ Drivers'!"+round[2]+",\"\"),\"\")").setNumberFormat("MMM YYYY").setBackground("#F2F3F4");
-      sh.getRange(r,4).setFormula("=IFERROR(IF('🎛️ Drivers'!"+round[3]+"=\"\",\"\",VALUE('🎛️ Drivers'!"+round[3]+")),\"\")").setNumberFormat("$#,##0").setBackground("#F2F3F4");
+      sh.getRange(r,4).setFormula("='🎛️ Drivers'!"+round[3]).setBackground("#FEF9E7").setWrap(true);
       sh.setRowHeight(r,24);
     });
   label(sh,8,1,"Total Capital Raised");
@@ -32,7 +32,7 @@ function setupFunding(ss) {
   label(sh,8,5,"Opening Cash");
   sh.getRange(8,5).setFormula("='🎛️ Drivers'!"+DR.OPENING_CASH).setNumberFormat("$#,##0").setBackground("#F2F3F4").setFontWeight("bold");
 
-  sh.getRange(9,1,1,5).merge()
+  sh.getRange(9,1,1,4).merge()
     .setFormula("=IF(OR("
       +"AND(ISNUMBER('🎛️ Drivers'!"+DR.ROUND1_DATE+"),MAX(0,(YEAR('🎛️ Drivers'!"+DR.ROUND1_DATE+")-YEAR('🎛️ Drivers'!"+DR.FORECAST_START+"))*12+MONTH('🎛️ Drivers'!"+DR.ROUND1_DATE+")-MONTH('🎛️ Drivers'!"+DR.FORECAST_START+"))>'🎛️ Drivers'!"+DR.HORIZON+"),"
       +"AND(ISNUMBER('🎛️ Drivers'!"+DR.ROUND2_DATE+"),MAX(0,(YEAR('🎛️ Drivers'!"+DR.ROUND2_DATE+")-YEAR('🎛️ Drivers'!"+DR.FORECAST_START+"))*12+MONTH('🎛️ Drivers'!"+DR.ROUND2_DATE+")-MONTH('🎛️ Drivers'!"+DR.FORECAST_START+"))>'🎛️ Drivers'!"+DR.HORIZON+"),"
@@ -42,7 +42,7 @@ function setupFunding(ss) {
     .setWrap(true).setFontStyle("italic");
   sh.setRowHeight(9,44);
 
-  var valRange = sh.getRange(9,1,1,5);
+  var valRange = sh.getRange(9,1,1,4);
   var valRules = sh.getConditionalFormatRules();
   valRules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied("=LEFT(A9,2)=\"⚠\"").setBackground("#FADBD8").setFontColor("#922B21").setRanges([valRange]).build());
   valRules.push(SpreadsheetApp.newConditionalFormatRule().whenFormulaSatisfied("=LEFT(A9,2)<>\"⚠\"").setBackground("#D5F5E3").setFontColor("#1D9E75").setRanges([valRange]).build());

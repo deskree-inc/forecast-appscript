@@ -285,207 +285,29 @@
 
 <body>
 
-    <h2>📊 Tetrix Scenario Loader</h2>
-    <p class="subtitle">Form matches v3.1 Drivers — or paste JSON / export from the sheet</p>
+    <h2><?= menuLabel ?> — <?= headingSuffix ?></h2>
+    <p class="subtitle">Import / export all 🎛️ Drivers inputs as JSON — edit assumptions in the sheet anytime</p>
 
     <div class="tabs">
-        <div class="tab active" onclick="switchTab('form')">📝 Form</div>
-        <div class="tab" onclick="switchTab('json')">{ } JSON</div>
+        <div class="tab active" onclick="switchTab('json')">{ } JSON</div>
         <div class="tab" onclick="switchTab('export')">⬆️ Export</div>
     </div>
 
     <div class="section investor-strip">
         <div class="section-title">Investor view</div>
-        <p class="investor-hint">Hides internal tabs and Instructions; opens &ldquo;For investors&rdquo; (how to read). Editors can still unhide.</p>
+        <p class="investor-hint">Hides internal tabs and &ldquo;Start here&rdquo;; opens &ldquo;For investors&rdquo; (how to read). Editors can still unhide.</p>
         <div class="row2">
             <button type="button" class="btn btn-secondary" onclick="investorEnter()">Hide internal</button>
             <button type="button" class="btn btn-secondary" onclick="investorRestore()">Show internal</button>
         </div>
     </div>
 
-    <!-- ── FORM PANEL (v3.1 Drivers — matches applyScenario) ── -->
-    <div id="panel-form" class="panel active">
-        <div class="hint-row">
-            Individual named positions are not on this form (use JSON).<br />
-            <button type="button" onclick="prefillFromSheet()">Load current sheet into form</button>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Meta</div>
-            <div class="field"><label>Scenario name</label><input id="m-name" type="text" value="Quick scenario" /></div>
-            <div class="field"><label>Forecast horizon (months) — B14</label><input id="m-horizon" type="number" value="24" min="1" max="120" /></div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">ARR targets</div>
-            <div class="field"><label>Target ARR ($) — overwrites B12 value</label><input id="arr-target" type="number" value="4000000" step="1" /></div>
-            <div class="field"><label>Target MoM growth (% / month)</label><input id="arr-mom" type="number" value="20" step="0.1" /></div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Funding (up to 3 rounds — Section K)</div>
-            <div class="subhead">Round 1</div>
-            <div class="row2">
-                <div class="field"><label>Name</label><input id="fr1-name" type="text" placeholder="Seed" /></div>
-                <div class="field"><label>Amount ($)</label><input id="fr1-amt" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>Close date</label><input id="fr1-date" type="date" /></div>
-                <div class="field"><label>ARR at close ($)</label><input id="fr1-arr" type="number" /></div>
-            </div>
-            <div class="field"><label>Notes</label><input id="fr1-notes" type="text" /></div>
-            <div class="subhead">Round 2</div>
-            <div class="row2">
-                <div class="field"><label>Name</label><input id="fr2-name" type="text" /></div>
-                <div class="field"><label>Amount ($)</label><input id="fr2-amt" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>Close date</label><input id="fr2-date" type="date" /></div>
-                <div class="field"><label>ARR at close ($)</label><input id="fr2-arr" type="number" /></div>
-            </div>
-            <div class="field"><label>Notes</label><input id="fr2-notes" type="text" /></div>
-            <div class="subhead">Round 3</div>
-            <div class="row2">
-                <div class="field"><label>Name</label><input id="fr3-name" type="text" /></div>
-                <div class="field"><label>Amount ($)</label><input id="fr3-amt" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>Close date</label><input id="fr3-date" type="date" /></div>
-                <div class="field"><label>ARR at close ($)</label><input id="fr3-arr" type="number" /></div>
-            </div>
-            <div class="field"><label>Notes</label><input id="fr3-notes" type="text" /></div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">ICP segments (MM row 18, ENT row 19)</div>
-            <p class="json-hint">Percent fields: enter as whole numbers (e.g. 8 for 8% churn).</p>
-            <div class="subhead">Mid-market</div>
-            <div class="row2">
-                <div class="field"><label>Beg. ACV ($)</label><input id="mm-beg" type="number" /></div>
-                <div class="field"><label>Exp. ACV ($)</label><input id="mm-expacv" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>Churn (annual %)</label><input id="mm-churn" type="number" step="0.1" /></div>
-                <div class="field"><label>Expansion (annual %)</label><input id="mm-exp" type="number" step="0.1" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>Expansion month</label><input id="mm-expmo" type="number" /></div>
-                <div class="field"><label>CAC ($)</label><input id="mm-cac" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>Lead time (mo)</label><input id="mm-lead" type="number" /></div>
-                <div class="field"><label>Close rate (annual %)</label><input id="mm-close" type="number" step="0.1" /></div>
-            </div>
-            <div class="subhead">Enterprise</div>
-            <div class="row2">
-                <div class="field"><label>Beg. ACV ($)</label><input id="ent-beg" type="number" /></div>
-                <div class="field"><label>Exp. ACV ($)</label><input id="ent-expacv" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>Churn (annual %)</label><input id="ent-churn" type="number" step="0.1" /></div>
-                <div class="field"><label>Expansion (annual %)</label><input id="ent-exp" type="number" step="0.1" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>Expansion month</label><input id="ent-expmo" type="number" /></div>
-                <div class="field"><label>CAC ($)</label><input id="ent-cac" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>Lead time (mo)</label><input id="ent-lead" type="number" /></div>
-                <div class="field"><label>Close rate (annual %)</label><input id="ent-close" type="number" step="0.1" /></div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Logo MoM growth — B39</div>
-            <div class="field"><label>Month-over-month growth (%)</label><input id="logo-mom" type="number" value="5" step="0.1" /></div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Maintenance ratios (accounts / person)</div>
-            <div class="row3">
-                <div class="field"><label>AE</label><input id="mnt-ae" type="number" /></div>
-                <div class="field"><label>FDE</label><input id="mnt-fde" type="number" /></div>
-                <div class="field"><label>CSM</label><input id="mnt-csm" type="number" /></div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Department defaults (rows 47–50)</div>
-            <p class="json-hint">Start HC, annual salary, SW/mo, HW one-time, insurance/mo</p>
-            <div class="subhead">Engineering</div>
-            <div class="row2">
-                <div class="field"><label>Start HC</label><input id="d-eng-hc" type="number" /></div>
-                <div class="field"><label>Annual salary ($)</label><input id="d-eng-sal" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>SW / mo ($)</label><input id="d-eng-sw" type="number" /></div>
-                <div class="field"><label>HW one-time ($)</label><input id="d-eng-hw" type="number" /></div>
-            </div>
-            <div class="field"><label>Insurance / mo ($)</label><input id="d-eng-ins" type="number" /></div>
-            <div class="subhead">Sales</div>
-            <div class="row2">
-                <div class="field"><label>Start HC</label><input id="d-sal-hc" type="number" /></div>
-                <div class="field"><label>Annual salary ($)</label><input id="d-sal-sal" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>SW / mo ($)</label><input id="d-sal-sw" type="number" /></div>
-                <div class="field"><label>HW one-time ($)</label><input id="d-sal-hw" type="number" /></div>
-            </div>
-            <div class="field"><label>Insurance / mo ($)</label><input id="d-sal-ins" type="number" /></div>
-            <div class="subhead">CS / FDE-CSE</div>
-            <div class="row2">
-                <div class="field"><label>Start HC</label><input id="d-cs-hc" type="number" /></div>
-                <div class="field"><label>Annual salary ($)</label><input id="d-cs-sal" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>SW / mo ($)</label><input id="d-cs-sw" type="number" /></div>
-                <div class="field"><label>HW one-time ($)</label><input id="d-cs-hw" type="number" /></div>
-            </div>
-            <div class="field"><label>Insurance / mo ($)</label><input id="d-cs-ins" type="number" /></div>
-            <div class="subhead">G&amp;A</div>
-            <div class="row2">
-                <div class="field"><label>Start HC</label><input id="d-ga-hc" type="number" /></div>
-                <div class="field"><label>Annual salary ($)</label><input id="d-ga-sal" type="number" /></div>
-            </div>
-            <div class="row2">
-                <div class="field"><label>SW / mo ($)</label><input id="d-ga-sw" type="number" /></div>
-                <div class="field"><label>HW one-time ($)</label><input id="d-ga-hw" type="number" /></div>
-            </div>
-            <div class="field"><label>Insurance / mo ($)</label><input id="d-ga-ins" type="number" /></div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Marketing (annual $)</div>
-            <div class="row2">
-                <div class="field"><label>Events — B66</label><input id="mk-ev" type="number" /></div>
-                <div class="field"><label>Digital — B67</label><input id="mk-dig" type="number" /></div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Infrastructure</div>
-            <div class="row2">
-                <div class="field"><label>Infra / customer / mo ($) — B71</label><input id="inf-cust" type="number" /></div>
-                <div class="field"><label>Tooling / eng / mo ($) — B72</label><input id="inf-tool" type="number" /></div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">Sales comp</div>
-            <div class="row2">
-                <div class="field"><label>Commission (% of 1st-yr ACV)</label><input id="sl-comm" type="number" value="10" step="0.1" /></div>
-                <div class="field"><label>Accelerator (above quota %)</label><input id="sl-acc" type="number" value="15" step="0.1" /></div>
-            </div>
-        </div>
-
-        <button class="btn btn-primary" id="btn-form" onclick="submitForm()">⬇️ Load into Sheet</button>
-    </div>
-
     <!-- ── JSON PANEL ─────────────────────────────────────── -->
-    <div id="panel-json" class="panel">
+    <div id="panel-json" class="panel active">
         <p class="json-hint">
-            Ask Claude: <em>"Generate a Tetrix scenario JSON for [your description]"</em> and paste the result below.
+            Paste full Drivers JSON, or <strong>Load from sheet</strong> to pull the current state (all inputs). Ask Claude to vary exported JSON for your case.
         </p>
+        <button type="button" class="btn btn-secondary" onclick="loadSheetIntoJson()">📥 Load from sheet</button>
         <textarea id="json-input" placeholder='Paste JSON scenario here...'></textarea>
         <button class="btn btn-primary" id="btn-json" onclick="submitJson()">⬇️ Load into Sheet</button>
     </div>
@@ -502,210 +324,25 @@
     <script>
         function switchTab(name) {
             document.querySelectorAll(".tab").forEach((t, i) => {
-                t.classList.toggle("active", ["form", "json", "export"][i] === name);
+                t.classList.toggle("active", ["json", "export"][i] === name);
             });
             document.querySelectorAll(".panel").forEach((p, i) => {
-                p.classList.toggle("active", ["panel-form", "panel-json", "panel-export"][i] === "panel-" + name);
+                p.classList.toggle("active", ["panel-json", "panel-export"][i] === "panel-" + name);
             });
             document.getElementById("status").className = "status";
         }
 
-        function n(id) { return Number(document.getElementById(id).value) || 0; }
-        function v(id) { return document.getElementById(id).value; }
-        function pct(id) { return n(id) / 100; }
-
-        function fundingRowsFromForm() {
-            var rounds = [];
-            for (var i = 1; i <= 3; i++) {
-                var name = String(v("fr" + i + "-name") || "").trim();
-                if (!name) continue;
-                rounds.push({
-                    name: name,
-                    amount: n("fr" + i + "-amt"),
-                    closeDate: v("fr" + i + "-date") || "",
-                    expectedARR: n("fr" + i + "-arr"),
-                    notes: v("fr" + i + "-notes") || ""
-                });
-            }
-            return rounds;
-        }
-
-        /** Builds JSON matching ScenarioSidebar.gs applyScenario (v3.1). Omits positions — sheet rows unchanged. */
-        function buildFromForm() {
-            var g = pct("logo-mom");
-            return {
-                meta: {
-                    name: v("m-name") || "Scenario",
-                    forecastHorizon: n("m-horizon")
-                },
-                fundingRounds: fundingRowsFromForm(),
-                arrTargets: {
-                    targetARR: n("arr-target"),
-                    momGrowthRate: pct("arr-mom")
-                },
-                segments: {
-                    midMarket: {
-                        begACV: n("mm-beg"),
-                        expACV: n("mm-expacv"),
-                        churnRate: pct("mm-churn"),
-                        expansionRate: pct("mm-exp"),
-                        expansionMonth: n("mm-expmo"),
-                        cac: n("mm-cac"),
-                        leadTime: n("mm-lead"),
-                        closeRate: pct("mm-close")
-                    },
-                    enterprise: {
-                        begACV: n("ent-beg"),
-                        expACV: n("ent-expacv"),
-                        churnRate: pct("ent-churn"),
-                        expansionRate: pct("ent-exp"),
-                        expansionMonth: n("ent-expmo"),
-                        cac: n("ent-cac"),
-                        leadTime: n("ent-lead"),
-                        closeRate: pct("ent-close")
-                    }
-                },
-                logoRamp: {
-                    midMarket: [g, 0, 0, 0],
-                    enterprise: [g, 0, 0, 0]
-                },
-                maintenanceRatios: {
-                    aePerAccounts: n("mnt-ae"),
-                    fdePerAccounts: n("mnt-fde"),
-                    csmPerAccounts: n("mnt-csm")
-                },
-                headcount: {
-                    deptDefaults: {
-                        engineering: {
-                            startHC: n("d-eng-hc"),
-                            annualSalary: n("d-eng-sal"),
-                            swCostPerMo: n("d-eng-sw"),
-                            hwCostOneTime: n("d-eng-hw"),
-                            insurancePerMo: n("d-eng-ins")
-                        },
-                        sales: {
-                            startHC: n("d-sal-hc"),
-                            annualSalary: n("d-sal-sal"),
-                            swCostPerMo: n("d-sal-sw"),
-                            hwCostOneTime: n("d-sal-hw"),
-                            insurancePerMo: n("d-sal-ins")
-                        },
-                        csSupport: {
-                            startHC: n("d-cs-hc"),
-                            annualSalary: n("d-cs-sal"),
-                            swCostPerMo: n("d-cs-sw"),
-                            hwCostOneTime: n("d-cs-hw"),
-                            insurancePerMo: n("d-cs-ins")
-                        },
-                        gAndA: {
-                            startHC: n("d-ga-hc"),
-                            annualSalary: n("d-ga-sal"),
-                            swCostPerMo: n("d-ga-sw"),
-                            hwCostOneTime: n("d-ga-hw"),
-                            insurancePerMo: n("d-ga-ins")
-                        }
-                    }
-                },
-                marketing: {
-                    eventsAnnual: n("mk-ev"),
-                    digitalAnnual: n("mk-dig")
-                },
-                infrastructure: {
-                    infraPerCustomerPerMo: n("inf-cust"),
-                    toolingPerEngineerPerMo: n("inf-tool")
-                },
-                sales: {
-                    commission: pct("sl-comm"),
-                    accelerator: pct("sl-acc")
-                }
-            };
-        }
-
-        function pctDisplay(x) {
-            if (x === null || x === undefined || x === "") return "";
-            return Math.round(Number(x) * 100000) / 1000;
-        }
-
-        function fillFormFromData(d) {
-            if (!d) {
-                setStatus("No data returned.", true);
-                return;
-            }
-            document.getElementById("m-name").value = d.meta && d.meta.name ? d.meta.name : "";
-            document.getElementById("m-horizon").value = d.meta && d.meta.forecastHorizon != null ? d.meta.forecastHorizon : 24;
-            if (d.arrTargets) {
-                document.getElementById("arr-target").value = d.arrTargets.targetARR != null ? d.arrTargets.targetARR : "";
-                document.getElementById("arr-mom").value = pctDisplay(d.arrTargets.momGrowthRate);
-            }
-            for (var r = 1; r <= 3; r++) {
-                var round = d.fundingRounds && d.fundingRounds[r - 1];
-                document.getElementById("fr" + r + "-name").value = round && round.name ? round.name : "";
-                document.getElementById("fr" + r + "-amt").value = round && round.amount != null ? round.amount : "";
-                document.getElementById("fr" + r + "-date").value = round && round.closeDate
-                    ? String(round.closeDate).slice(0, 10)
-                    : "";
-                document.getElementById("fr" + r + "-arr").value = round && round.expectedARR != null ? round.expectedARR : "";
-                document.getElementById("fr" + r + "-notes").value = round && round.notes ? round.notes : "";
-            }
-            var mm = d.segments && d.segments.midMarket;
-            if (mm) {
-                document.getElementById("mm-beg").value = mm.begACV != null ? mm.begACV : "";
-                document.getElementById("mm-expacv").value = mm.expACV != null ? mm.expACV : "";
-                document.getElementById("mm-churn").value = pctDisplay(mm.churnRate);
-                document.getElementById("mm-exp").value = pctDisplay(mm.expansionRate);
-                document.getElementById("mm-expmo").value = mm.expansionMonth != null ? mm.expansionMonth : "";
-                document.getElementById("mm-cac").value = mm.cac != null ? mm.cac : "";
-                document.getElementById("mm-lead").value = mm.leadTime != null ? mm.leadTime : "";
-                document.getElementById("mm-close").value = pctDisplay(mm.closeRate);
-            }
-            var ent = d.segments && d.segments.enterprise;
-            if (ent) {
-                document.getElementById("ent-beg").value = ent.begACV != null ? ent.begACV : "";
-                document.getElementById("ent-expacv").value = ent.expACV != null ? ent.expACV : "";
-                document.getElementById("ent-churn").value = pctDisplay(ent.churnRate);
-                document.getElementById("ent-exp").value = pctDisplay(ent.expansionRate);
-                document.getElementById("ent-expmo").value = ent.expansionMonth != null ? ent.expansionMonth : "";
-                document.getElementById("ent-cac").value = ent.cac != null ? ent.cac : "";
-                document.getElementById("ent-lead").value = ent.leadTime != null ? ent.leadTime : "";
-                document.getElementById("ent-close").value = pctDisplay(ent.closeRate);
-            }
-            var lr = d.logoRamp && d.logoRamp.midMarket && d.logoRamp.midMarket[0];
-            document.getElementById("logo-mom").value = lr != null ? pctDisplay(lr) : "5";
-            var mr = d.maintenanceRatios || {};
-            document.getElementById("mnt-ae").value = mr.aePerAccounts != null ? mr.aePerAccounts : "";
-            document.getElementById("mnt-fde").value = mr.fdePerAccounts != null ? mr.fdePerAccounts : "";
-            document.getElementById("mnt-csm").value = mr.csmPerAccounts != null ? mr.csmPerAccounts : "";
-            var dd = d.headcount && d.headcount.deptDefaults;
-            if (dd) {
-                function fillDept(prefix, o) {
-                    if (!o) return;
-                    document.getElementById("d-" + prefix + "-hc").value = o.startHC != null ? o.startHC : "";
-                    document.getElementById("d-" + prefix + "-sal").value = o.annualSalary != null ? o.annualSalary : "";
-                    document.getElementById("d-" + prefix + "-sw").value = o.swCostPerMo != null ? o.swCostPerMo : "";
-                    document.getElementById("d-" + prefix + "-hw").value = o.hwCostOneTime != null ? o.hwCostOneTime : "";
-                    document.getElementById("d-" + prefix + "-ins").value = o.insurancePerMo != null ? o.insurancePerMo : "";
-                }
-                fillDept("eng", dd.engineering);
-                fillDept("sal", dd.sales);
-                fillDept("cs", dd.csSupport);
-                fillDept("ga", dd.gAndA);
-            }
-            var mk = d.marketing || {};
-            document.getElementById("mk-ev").value = mk.eventsAnnual != null ? mk.eventsAnnual : "";
-            document.getElementById("mk-dig").value = mk.digitalAnnual != null ? mk.digitalAnnual : "";
-            var inf = d.infrastructure || {};
-            document.getElementById("inf-cust").value = inf.infraPerCustomerPerMo != null ? inf.infraPerCustomerPerMo : "";
-            document.getElementById("inf-tool").value = inf.toolingPerEngineerPerMo != null ? inf.toolingPerEngineerPerMo : "";
-            var sl = d.sales || {};
-            document.getElementById("sl-comm").value = pctDisplay(sl.commission);
-            document.getElementById("sl-acc").value = pctDisplay(sl.accelerator);
-            setStatus("Form loaded from current sheet.", false);
-        }
-
-        function prefillFromSheet() {
+        function loadSheetIntoJson() {
             setStatus("Reading Drivers…", false);
             google.script.run
-                .withSuccessHandler(fillFormFromData)
+                .withSuccessHandler(function (d) {
+                    if (!d) {
+                        setStatus("No data returned.", true);
+                        return;
+                    }
+                    document.getElementById("json-input").value = JSON.stringify(d, null, 2);
+                    setStatus("✓ Loaded current Drivers into the editor. Edit JSON, then Load into Sheet.", false);
+                })
                 .withFailureHandler(err => setStatus("❌ " + err.message, true))
                 .getCurrentScenario();
         }
@@ -720,14 +357,6 @@
             const btn = document.getElementById(btnId);
             btn.disabled = loading;
             btn.textContent = loading ? "⏳ Loading..." : "⬇️ Load into Sheet";
-        }
-
-        function submitForm() {
-            setLoading("btn-form", true);
-            google.script.run
-                .withSuccessHandler(msg => { setStatus(msg); setLoading("btn-form", false); })
-                .withFailureHandler(err => { setStatus("❌ " + err.message, true); setLoading("btn-form", false); })
-                .applyScenario(buildFromForm());
         }
 
         function submitJson() {

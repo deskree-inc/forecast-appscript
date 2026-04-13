@@ -58,7 +58,7 @@ function setupCashFlow(ss) {
 
   sh.getRange(CF.CAPEX,      1).setNote("At seed/Series A stage, hardware per hire (~$2K) is expensed, not capitalised.");
   sh.getRange(CF.BURN_RATE,  1).setNote("Operating + Investing outflows only. Excludes capital raises and interest income.");
-  sh.getRange(CF.RUNWAY,     1).setNote("Ending cash ÷ |Monthly Net Burn|. Red when < 6 months.");
+  sh.getRange(CF.RUNWAY,     1).setNote("Ending cash ÷ 3-month rolling average of |Monthly Net Burn| (months 1–2 use available history). Red when < 6 months.");
   sh.getRange(CF.CASH_ARR,   1).setNote("Ending cash as a multiple of annualised MRR. Investors expect ≥ 12 months of runway.");
   sh.getRange(CF.INT_INCOME, 1).setNote("US GAAP: interest received = Operating Activity. Pulled from 💰 Funding schedule.");
 
@@ -135,8 +135,15 @@ function setupCashFlow(ss) {
     sh.getRange(CF.BURN_RATE, col)
       .setFormula("=IF(" + ms + ">" + HOR + ",\"\"," + C + CF.NET_OPS + "+" + C + CF.NET_INV + ")")
       .setNumberFormat("$#,##0").setFontWeight("bold");
+    function absBurnCol(idx) {
+      return "ABS(" + colLetter(idx) + CF.BURN_RATE + ")";
+    }
+    var runwayDenom;
+    if (m === 1) runwayDenom = absBurnCol(2);
+    else if (m === 2) runwayDenom = "(" + absBurnCol(2) + "+" + absBurnCol(3) + ")/2";
+    else runwayDenom = "AVERAGE(" + absBurnCol(m - 1) + "," + absBurnCol(m) + "," + absBurnCol(m + 1) + ")";
     sh.getRange(CF.RUNWAY, col)
-      .setFormula("=IF(" + ms + ">" + HOR + ",\"\",IF(" + C + CF.BURN_RATE + ">=0,\"\",IFERROR(" + C + CF.END_CASH + "/ABS(" + C + CF.BURN_RATE + "),0)))")
+      .setFormula("=IF(" + ms + ">" + HOR + ",\"\",IF(" + C + CF.BURN_RATE + ">=0,\"\",IFERROR(" + C + CF.END_CASH + "/" + runwayDenom + ",0)))")
       .setNumberFormat("0.0").setFontWeight("bold");
     sh.getRange(CF.CASH_ARR, col)
       .setFormula("=IF(" + ms + ">" + HOR + ",\"\",IFERROR(" + C + CF.END_CASH + "/IFERROR('💸 P&L'!" + C + PNL.ARR + ",1),0))")

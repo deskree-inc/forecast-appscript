@@ -68,12 +68,11 @@ function setupPnL(ss) {
   _secHdr(sh,PNL.SEC_METRICS,"KEY METRICS",MONTHS);
   sh.getRange(PNL.HEADCOUNT,1).setValue("Total Headcount");
   sh.getRange(PNL.ARR_PER_EMP,1).setValue("ARR per Employee ($)").setFontWeight("bold");
-  sh.getRange(PNL.MAGIC_NUMBER,1).setValue("Magic Number").setFontWeight("bold");
   sh.getRange(PNL.BURN_MULTIPLE,1).setValue("Burn Multiple (x)").setFontWeight("bold");
   sh.getRange(PNL.RULE_OF_40,1).setValue("Rule of 40 (%)").setFontWeight("bold");
-  sh.getRange(PNL.RD_PCT_ARR,1).setValue("  R&D as % of ARR");
-  sh.getRange(PNL.SM_PCT_ARR,1).setValue("  S&M as % of ARR");
-  sh.getRange(PNL.GA_PCT_ARR,1).setValue("  G&A as % of ARR");
+  sh.getRange(PNL.RD_PCT_ARR,1).setValue("  R&D as % of MRR");
+  sh.getRange(PNL.SM_PCT_ARR,1).setValue("  S&M as % of MRR");
+  sh.getRange(PNL.GA_PCT_ARR,1).setValue("  G&A as % of MRR");
   sh.getRange(PNL.NOTE,1,1,6).merge().setValue("✅ All formulas live. Only edit 🎛️ Drivers — everything here is auto-calculated.").setFontStyle("italic").setFontColor("#1D9E75");
 
   for(var m=1;m<=MONTHS;m++){
@@ -140,9 +139,8 @@ function setupPnL(ss) {
       .setNumberFormat("$#,##0").setFontWeight("bold").setBackground("#F2F3F4");
     sh.getRange(PNL.SALES_PAYROLL,col)
       .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"6)").setNumberFormat("$#,##0");
-    var prevMRR=m===1?"0":colLetter(col-1)+PNL.MRR;
     sh.getRange(PNL.COMMISSION,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\",MAX(0,"+C+PNL.MRR+"-"+prevMRR+")*12*'🎛️ Drivers'!"+DR.COMMISSION+")")
+      .setFormula("=IF("+ms+">"+HOR+",\"\",("+REV_TAB+"!"+mmNAL+dRow+"+"+REV_TAB+"!"+entNAL+dRow+")*'🎛️ Drivers'!"+DR.COMMISSION+")")
       .setNumberFormat("$#,##0");
     sh.getRange(PNL.MARKETING,col)
       .setFormula("=IF("+ms+">"+HOR+",\"\",IF("+ms+"<=12,('🎛️ Drivers'!B66*(1-'🎛️ Drivers'!B117)+'🎛️ Drivers'!B67)/12,('🎛️ Drivers'!B66*(1-'🎛️ Drivers'!B117)+'🎛️ Drivers'!B67)*'🎛️ Drivers'!B69/12))")
@@ -201,12 +199,8 @@ function setupPnL(ss) {
       .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+C+PNL.ARR+"/"+C+PNL.HEADCOUNT+",0))")
       .setNumberFormat("$#,##0").setFontWeight("bold").setBackground("#E8F8F5");
     if(m===1){
-      sh.getRange(PNL.MAGIC_NUMBER,col).setValue("").setNumberFormat("0.00");
       sh.getRange(PNL.BURN_MULTIPLE,col).setValue("").setNumberFormat("0.00");
     } else {
-      sh.getRange(PNL.MAGIC_NUMBER,col)
-        .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR(MAX(0,"+C+PNL.MRR+"-"+Cp+PNL.MRR+")/"+Cp+PNL.SM_SUBTOTAL+",\"\"))")
-        .setNumberFormat("0.00").setFontWeight("bold").setBackground("#E8F8F5");
       sh.getRange(PNL.BURN_MULTIPLE,col)
         .setFormula("=IF("+ms+">"+HOR+",\"\",IF("+C+PNL.EBITDA+">=0,\"\",IFERROR(ABS("+C+PNL.EBITDA+")/MAX(1,"+C+PNL.NET_NEW_ARR+"),\"\")))")
         .setNumberFormat("0.00").setFontWeight("bold").setBackground("#E8F8F5");
@@ -216,11 +210,11 @@ function setupPnL(ss) {
       .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+C+PNL.YOY_GROWTH+"+"+C+PNL.EBITDA_MARGIN+",\"\"))")
       .setNumberFormat("0%").setFontWeight("bold").setBackground("#E8F8F5");
     sh.getRange(PNL.RD_PCT_ARR,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+C+PNL.RD_SUBTOTAL+"/"+C+PNL.ARR+",0))").setNumberFormat("0%");
+      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+C+PNL.RD_SUBTOTAL+"/"+C+PNL.MRR+",0))").setNumberFormat("0%");
     sh.getRange(PNL.SM_PCT_ARR,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+C+PNL.SM_SUBTOTAL+"/"+C+PNL.ARR+",0))").setNumberFormat("0%");
+      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+C+PNL.SM_SUBTOTAL+"/"+C+PNL.MRR+",0))").setNumberFormat("0%");
     sh.getRange(PNL.GA_PCT_ARR,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+C+PNL.GA_SUBTOTAL+"/"+C+PNL.ARR+",0))").setNumberFormat("0%");
+      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+C+PNL.GA_SUBTOTAL+"/"+C+PNL.MRR+",0))").setNumberFormat("0%");
   }
 
   var rules=sh.getConditionalFormatRules();
@@ -229,10 +223,6 @@ function setupPnL(ss) {
   rules.push(SpreadsheetApp.newConditionalFormatRule().whenNumberGreaterThanOrEqualTo(0).setFontColor("#1D9E75").setBackground("#D5F5E3").setRanges([ebitdaRange]).build());
   var burnRange=sh.getRange(PNL.CUMUL_BURN,2,1,MONTHS);
   rules.push(SpreadsheetApp.newConditionalFormatRule().whenNumberLessThan(0).setFontColor("#922B21").setBackground("#FADBD8").setRanges([burnRange]).build());
-  var magicRange=sh.getRange(PNL.MAGIC_NUMBER,2,1,MONTHS);
-  rules.push(SpreadsheetApp.newConditionalFormatRule().whenNumberGreaterThanOrEqualTo(0.75).setBackground("#D5F5E3").setFontColor("#1D9E75").setRanges([magicRange]).build());
-  rules.push(SpreadsheetApp.newConditionalFormatRule().whenNumberBetween(0.4,0.75).setBackground("#FEF9E7").setFontColor("#D4AC0D").setRanges([magicRange]).build());
-  rules.push(SpreadsheetApp.newConditionalFormatRule().whenNumberLessThan(0.4).setBackground("#FADBD8").setFontColor("#922B21").setRanges([magicRange]).build());
   var bmRange=sh.getRange(PNL.BURN_MULTIPLE,2,1,MONTHS);
   rules.push(SpreadsheetApp.newConditionalFormatRule().whenNumberLessThan(1).setBackground("#D5F5E3").setFontColor("#1D9E75").setRanges([bmRange]).build());
   rules.push(SpreadsheetApp.newConditionalFormatRule().whenNumberBetween(1,2).setBackground("#FEF9E7").setFontColor("#D4AC0D").setRanges([bmRange]).build());
@@ -253,7 +243,7 @@ function _formatPnL(sh,MONTHS) {
   for(var r=1;r<=PNL.NOTE;r++) sh.setRowHeight(r,20);
   [PNL.SEC_REVENUE,PNL.SEC_COGS,PNL.SEC_OPEX,PNL.SEC_EBITDA,PNL.SEC_METRICS].forEach(function(r){sh.setRowHeight(r,26);});
   [PNL.SUB_ARR_MOVE,PNL.SUB_RD,PNL.SUB_SM,PNL.SUB_GA].forEach(function(r){sh.setRowHeight(r,21);});
-  [PNL.MRR,PNL.ARR,PNL.NRR,PNL.GROSS_PROFIT,PNL.TOTAL_OPEX,PNL.EBITDA,PNL.MAGIC_NUMBER,PNL.BURN_MULTIPLE,PNL.RULE_OF_40].forEach(function(r){sh.setRowHeight(r,22);});
+  [PNL.MRR,PNL.ARR,PNL.NRR,PNL.GROSS_PROFIT,PNL.TOTAL_OPEX,PNL.EBITDA,PNL.BURN_MULTIPLE,PNL.RULE_OF_40].forEach(function(r){sh.setRowHeight(r,22);});
   [PNL.YOY_GROWTH,PNL.NEW_ARR,PNL.CHURN_ARR,PNL.EXP_ARR,PNL.INFRA,PNL.CS_PAYROLL,PNL.ENG_PAYROLL,
    PNL.SALES_PAYROLL,PNL.COMMISSION,PNL.MARKETING,PNL.TRAVEL,
    PNL.GA_PAYROLL,PNL.TOOLING,PNL.PROF_FEES,PNL.CO_SW,PNL.RECRUITING,PNL.HARDWARE,
@@ -261,7 +251,7 @@ function _formatPnL(sh,MONTHS) {
     .forEach(function(r){sh.getRange(r,1).setFontWeight("normal").setFontColor("#444444");});
   [PNL.MRR,PNL.ARR,PNL.NET_NEW_ARR,PNL.NRR,PNL.TOTAL_COGS,PNL.GROSS_PROFIT,PNL.GROSS_MARGIN,
    PNL.RD_SUBTOTAL,PNL.SM_SUBTOTAL,PNL.GA_SUBTOTAL,PNL.TOTAL_OPEX,
-   PNL.EBITDA,PNL.EBITDA_MARGIN,PNL.CUMUL_BURN,PNL.ARR_PER_EMP,PNL.MAGIC_NUMBER,PNL.BURN_MULTIPLE,PNL.RULE_OF_40]
+   PNL.EBITDA,PNL.EBITDA_MARGIN,PNL.CUMUL_BURN,PNL.ARR_PER_EMP,PNL.BURN_MULTIPLE,PNL.RULE_OF_40]
     .forEach(function(r){sh.getRange(r,1).setFontWeight("bold").setFontColor("#000000");});
   [PNL.TOTAL_COGS,PNL.GROSS_PROFIT,PNL.TOTAL_OPEX,PNL.EBITDA,PNL.SEC_METRICS].forEach(function(r){
     sh.getRange(r,1,1,MONTHS+1).setBorder(true,false,false,false,false,false,"#AAAAAA",SpreadsheetApp.BorderStyle.SOLID);
@@ -273,16 +263,15 @@ function _formatPnL(sh,MONTHS) {
     PNL.INFRA,PNL.CS_PAYROLL,PNL.TOTAL_COGS,PNL.GROSS_PROFIT,PNL.GROSS_MARGIN,
     PNL.ENG_PAYROLL,PNL.RD_SUBTOTAL,PNL.SALES_PAYROLL,PNL.COMMISSION,PNL.MARKETING,PNL.TRAVEL,PNL.SM_SUBTOTAL,
     PNL.GA_PAYROLL,PNL.TOOLING,PNL.PROF_FEES,PNL.CO_SW,PNL.RECRUITING,PNL.HARDWARE,PNL.GA_SUBTOTAL,PNL.TOTAL_OPEX,
-    PNL.EBITDA,PNL.EBITDA_MARGIN,PNL.CUMUL_BURN,PNL.HEADCOUNT,PNL.ARR_PER_EMP,PNL.MAGIC_NUMBER,PNL.BURN_MULTIPLE,PNL.RULE_OF_40,PNL.RD_PCT_ARR,PNL.SM_PCT_ARR,PNL.GA_PCT_ARR];
+    PNL.EBITDA,PNL.EBITDA_MARGIN,PNL.CUMUL_BURN,PNL.HEADCOUNT,PNL.ARR_PER_EMP,PNL.BURN_MULTIPLE,PNL.RULE_OF_40,PNL.RD_PCT_ARR,PNL.SM_PCT_ARR,PNL.GA_PCT_ARR];
   stripeRows.forEach(function(r,i){sh.getRange(r,1).setBackground(i%2===0?"#FFFFFF":"#F8F9FA");});
   sh.getRange(PNL.INTEREST_INCOME,1).setNote("Non-operating income. Based on prior month ending cash × annual rate from 🎛️ Drivers K.");
   sh.getRange(PNL.INTEREST_INCOME,1).setValue("Interest Income ($)").setFontColor("#1D9E75").setFontStyle("italic").setFontWeight("normal");
-  sh.getRange(PNL.MAGIC_NUMBER,1).setNote("> 0.75 efficient  |  > 1.5 pour fuel  |  < 0.4 review S&M");
   sh.getRange(PNL.NRR,1).setNote("Annualized monthly retention. Best-in-class SaaS: > 120%");
   sh.getRange(PNL.ARR_PER_EMP,1).setNote("Bessemer Series A benchmark: $150K–$200K for vertical SaaS");
   sh.getRange(PNL.BURN_MULTIPLE,1).setNote("< 1x = efficient  |  1–2x = watch  |  > 2x = flag. Blank when profitable.");
   sh.getRange(PNL.RULE_OF_40,1).setNote("YoY ARR Growth % + EBITDA Margin %. > 40% = healthy. Blank for months 1–12.");
-  sh.getRange(PNL.RD_PCT_ARR,1).setNote("Benchmark: R&D 20–30% of ARR at Series A");
-  sh.getRange(PNL.SM_PCT_ARR,1).setNote("Benchmark: S&M 30–50% of ARR at Series A");
-  sh.getRange(PNL.GA_PCT_ARR,1).setNote("Benchmark: G&A 10–20% of ARR at Series A");
+  sh.getRange(PNL.RD_PCT_ARR,1).setNote("R&D as % of monthly MRR (same-period). Benchmark: ~20–30% of ARR annualized.");
+  sh.getRange(PNL.SM_PCT_ARR,1).setNote("S&M as % of monthly MRR (same-period). Benchmark: ~30–50% of ARR annualized.");
+  sh.getRange(PNL.GA_PCT_ARR,1).setNote("G&A as % of monthly MRR (same-period). Benchmark: ~10–20% of ARR annualized.");
 }

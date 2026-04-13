@@ -3,18 +3,33 @@
         "name": "Scenario template",
         "forecastHorizon": 24
     },
+    "timing": {
+        "forecastStart": "2026-01-01",
+        "firstMMClientDate": "2026-01-01",
+        "firstEntClientDate": "2026-01-01"
+    },
+    "annualArrTargets": [
+        { "targetARR": 0, "targetDate": "2026-12-01", "notes": "" },
+        { "targetARR": 0, "targetDate": "2027-12-01", "notes": "" },
+        { "targetARR": 0, "targetDate": "2028-12-01", "notes": "" },
+        { "targetARR": 0, "targetDate": "2029-12-01", "notes": "" },
+        { "targetARR": 0, "targetDate": "2030-12-01", "notes": "" }
+    ],
+    "arrTargets": {
+        "targetARR": 0,
+        "momGrowthRate": 0.1
+    },
     "fundingRounds": [
         {
             "name": "Round A",
             "amount": 0,
             "closeDate": "2026-01-01",
-            "expectedARR": 0,
             "notes": ""
         }
     ],
-    "arrTargets": {
-        "momGrowthRate": 0.1,
-        "targetARR": 0
+    "fundingMeta": {
+        "interestRate": 0.045,
+        "openingCash": 0
     },
     "segments": {
         "midMarket": {
@@ -38,9 +53,21 @@
             "closeRate": 0
         }
     },
+    "logoGrowth": 0,
     "logoRamp": {
         "midMarket": [0, 0, 0, 0],
         "enterprise": [0, 0, 0, 0]
+    },
+    "fdeCapacity": {
+        "concurrentMmPerFde": 4,
+        "concurrentEntPerFde": 1
+    },
+    "logoBackCalculation": {
+        "aeQuotaMm": 800000,
+        "aeQuotaEnt": 1500000,
+        "attainment": 0.75,
+        "mmPctOfTargetArr": 0.6,
+        "logoMomGrowth": 0.05
     },
     "maintenanceRatios": {
         "aePerAccounts": 0,
@@ -80,16 +107,45 @@
             }
         }
     },
+    "headcountScaling": {
+        "engMmRatio": 15,
+        "engEntRatio": 3,
+        "rndRatio": 3,
+        "salesRampMonths": 3,
+        "salesRepCapacity": 2,
+        "entSalesWeight": 4,
+        "aeRampMonths": 3,
+        "aeSalary": 90000,
+        "aeSwCostMo": 100,
+        "gaRatio": 35,
+        "loadedCostMult": 1.25,
+        "csmMmRatio": 20,
+        "csmEntRatio": 4
+    },
+    "existingBook": {
+        "mmLogos": 0,
+        "mmAcv": 0,
+        "entLogos": 0,
+        "entAcv": 0
+    },
     "marketing": {
         "digitalAnnual": 0,
-        "eventsAnnual": 0
+        "eventsAnnual": 0,
+        "mktgY2Multiplier": 1.5
     },
     "infrastructure": {
         "toolingPerEngineerPerMo": 0,
         "infraPerCustomerPerMo": 0
     },
+    "opex": {
+        "recruitPctOfSalary": 0.15,
+        "travelPerEntDeal": 5000,
+        "profFeesAnnual": 60000,
+        "companySoftwarePerEmpMo": 50,
+        "hardwarePerNewHire": 2000,
+        "eventsTravelPct": 0.4
+    },
     "sales": {
-        "commission": 0,
-        "accelerator": 0
+        "commission": 0
     }
 }

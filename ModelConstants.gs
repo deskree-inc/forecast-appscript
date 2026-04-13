@@ -1,8 +1,24 @@
 // ModelConstants.gs — sheet row/column maps (DR, PNL, CF, …). Shared by Setup*.gs, Benchmarks.gs.
-// Tetrix Financial Model v3.1 — run setupFinancialModel() from SetupMain.gs.
+// Financial forecast model (Sheets + Apps Script). Run setupFinancialModel() from SetupMain.gs.
 
-/** Reader-facing tab built by setupInvestorBrief(); opened in Tetrix investor view. */
+/**
+ * In-sheet UI branding for the bound script: menu next to Help, sidebar title, toasts.
+ * Change APP_MENU_LABEL (and optionally APP_SHORT_NAME) for your startup or product.
+ */
+var APP_MENU_LABEL = "📊 Forecast";
+/** Shown in the scenario sidebar heading after an em dash. */
+var APP_SIDEBAR_HEADING_SUFFIX = "Scenario loader";
+/** Plain name for toast titles (no emoji). */
+var APP_SHORT_NAME = "Forecast";
+
+/** Reader-facing tab built by setupInvestorBrief(); opened in investor view. */
 var SHEET_INVESTOR_BRIEF = "📋 For investors";
+
+/** First-tab guide (SetupInstructions.gs). Generic name so teams can reuse the template. */
+var SHEET_INSTRUCTIONS = "📖 Start here";
+
+/** Old tab names renamed to SHEET_INSTRUCTIONS on setup if the new name is not present. */
+var SHEET_INSTRUCTIONS_LEGACY_NAMES = ["📖 Instructions", "Tetrix intro", "📖 Tetrix intro"];
 
 var DR = {
   TARGET_ARR: "B12", MOM_GROWTH: "B13", HORIZON: "B14",
@@ -11,11 +27,14 @@ var DR = {
   FDE_MM_CAPACITY: "B30", FDE_ENT_CAPACITY: "B31",
   AE_QUOTA_MM: "B35", AE_QUOTA_ENT: "B36",
   ATTAINMENT: "B37", MM_PCT_ARR: "B38", LOGO_GROWTH: "B39",
-  FORECAST_START: "B42", FIRST_MM_DATE: "D43", FIRST_ENT_DATE: "D44",
+  FORECAST_START: "B42",
+  /** First MM / ENT logo dates (inputs). D43/D44 are month-offset formulas for revenue. */
+  FIRST_MM_CLIENT: "B43", FIRST_ENT_CLIENT: "B44",
+  FIRST_MM_DATE: "D43", FIRST_ENT_DATE: "D44",
   ENG: 47, SALES: 48, CS: 49, GA: 50,
   EVENTS: "B66", DIGITAL: "B67", MKTG_Y2: "B69",
   INFRA: "B71", TOOLING: "B72",
-  COMMISSION: "B75", ACCELERATOR: "B76",
+  COMMISSION: "B75",
   ENG_MM_RATIO: "B83", ENG_ENT_RATIO: "B84", RND_RATIO: "B85",
   SALES_RAMP: "B86", SALES_REP_CAP: "B87", ENT_SALES_WEIGHT: "B88",
   AE_RAMP: "B89", AE_SALARY: "B90", AE_SW: "B91",
@@ -28,9 +47,9 @@ var DR = {
   RECRUIT_PCT: "B112", TRAVEL_ENT: "B113",
   PROF_FEES: "B114", CO_SOFTWARE: "B115",
   HW_NEW_HIRE: "B116", TRAVEL_EVENTS_PCT: "B117",
-  ROUND1_NAME: "A121", ROUND1_AMT: "B121", ROUND1_DATE: "C121", ROUND1_ARR: "D121",
-  ROUND2_NAME: "A122", ROUND2_AMT: "B122", ROUND2_DATE: "C122", ROUND2_ARR: "D122",
-  ROUND3_NAME: "A123", ROUND3_AMT: "B123", ROUND3_DATE: "C123", ROUND3_ARR: "D123",
+  ROUND1_NAME: "A121", ROUND1_AMT: "B121", ROUND1_DATE: "C121", ROUND1_NOTES: "D121",
+  ROUND2_NAME: "A122", ROUND2_AMT: "B122", ROUND2_DATE: "C122", ROUND2_NOTES: "D122",
+  ROUND3_NAME: "A123", ROUND3_AMT: "B123", ROUND3_DATE: "C123", ROUND3_NOTES: "D123",
   INTEREST_RATE: "B125",
   OPENING_CASH:  "B126",
   ARR_Y1: "B132", ARR_Y1_DATE: "C132",
@@ -109,30 +128,29 @@ var SUM = {
   CASH_ARR:     27,
 
   SEC_EFFICIENCY: 28,
-  MAGIC_NUMBER:   29,
-  BURN_MULTIPLE:  30,
-  RULE_OF_40:     31,
-  ARR_PER_EMP:    32,
-  LTV_CAC_MM:     33,
-  LTV_CAC_ENT:    34,
+  BURN_MULTIPLE:  29,
+  RULE_OF_40:     30,
+  ARR_PER_EMP:    31,
+  LTV_CAC_MM:     32,
+  LTV_CAC_ENT:    33,
 
-  SEC_TEAM:     35,
-  HEADCOUNT:    36,
-  PAYROLL_PCT:  37,
-  ENG_HC:       38,
-  CS_HC:        39,
+  SEC_TEAM:     34,
+  HEADCOUNT:    35,
+  PAYROLL_PCT:  36,
+  ENG_HC:       37,
+  CS_HC:        38,
 
-  SEC_ASSUMP:   40,
-  TARGET_ARR:   41,
-  HORIZON_ROW:  42,
-  MOM_GROWTH:   43,
-  MM_ACV:       44,
-  ENT_ACV:      45,
-  MM_CHURN:     46,
-  ENT_CHURN:    47,
-  EXIST_ARR:    48,
+  SEC_ASSUMP:   39,
+  TARGET_ARR:   40,
+  HORIZON_ROW:  41,
+  LOGO_GROWTH_ROW: 42,
+  MM_ACV:       43,
+  ENT_ACV:      44,
+  MM_CHURN:     45,
+  ENT_CHURN:    46,
+  EXIST_ARR:    47,
 
-  NOTE:         50
+  NOTE:         48
 };
 
 var PNL = {
@@ -147,7 +165,7 @@ var PNL = {
   SUB_GA: 29, GA_PAYROLL: 30, TOOLING: 31, PROF_FEES: 32, CO_SW: 33, RECRUITING: 34,
   HARDWARE: 35, GA_SUBTOTAL: 36, TOTAL_OPEX: 37,
   SEC_EBITDA: 38, EBITDA: 39, EBITDA_MARGIN: 40, INTEREST_INCOME: 41, CUMUL_BURN: 42,
-  SEC_METRICS: 43, HEADCOUNT: 44, ARR_PER_EMP: 45, MAGIC_NUMBER: 46, BURN_MULTIPLE: 47,
-  RULE_OF_40: 48, RD_PCT_ARR: 49, SM_PCT_ARR: 50, GA_PCT_ARR: 51,
-  NOTE: 53
+  SEC_METRICS: 43, HEADCOUNT: 44, ARR_PER_EMP: 45, BURN_MULTIPLE: 46,
+  RULE_OF_40: 47, RD_PCT_ARR: 48, SM_PCT_ARR: 49, GA_PCT_ARR: 50,
+  NOTE: 52
 };
