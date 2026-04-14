@@ -49,7 +49,8 @@ function setupPnL(ss) {
   _subHdr(sh,PNL.SUB_SM,"Sales & Marketing",MONTHS);
   sh.getRange(PNL.SALES_PAYROLL,1).setValue("  Sales Payroll");
   sh.getRange(PNL.COMMISSION,1).setValue("  Sales Commission");
-  sh.getRange(PNL.MARKETING,1).setValue("  Marketing (Events + Digital)");
+  sh.getRange(PNL.MKTG_PAYROLL,1).setValue("  Marketing Payroll");
+  sh.getRange(PNL.MARKETING,1).setValue("  Marketing Programs (Events + Digital)");
   sh.getRange(PNL.TRAVEL,1).setValue("  Travel (ENT deals + Events)");
   sh.getRange(PNL.SM_SUBTOTAL,1).setValue("S&M Total ($)").setFontWeight("bold");
   _subHdr(sh,PNL.SUB_GA,"General & Administrative (G&A)",MONTHS);
@@ -118,7 +119,7 @@ function setupPnL(ss) {
       .setNumberFormat("0%").setFontWeight("bold").setBackground("#E8F8F5");
 
     sh.getRange(PNL.INFRA,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR('👥 Headcount'!"+C+"17,0)*'🎛️ Drivers'!"+DR.INFRA+")")
+      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR('👥 Headcount'!"+C+"19,0)*'🎛️ Drivers'!"+DR.INFRA+")")
       .setNumberFormat("$#,##0");
     sh.getRange(PNL.CS_PAYROLL,col)
       .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"8)").setNumberFormat("$#,##0");
@@ -142,34 +143,36 @@ function setupPnL(ss) {
     sh.getRange(PNL.COMMISSION,col)
       .setFormula("=IF("+ms+">"+HOR+",\"\",("+REV_TAB+"!"+mmNAL+dRow+"+"+REV_TAB+"!"+entNAL+dRow+")*'🎛️ Drivers'!"+DR.COMMISSION+")")
       .setNumberFormat("$#,##0");
+    sh.getRange(PNL.MKTG_PAYROLL,col)
+      .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"10)").setNumberFormat("$#,##0");
     sh.getRange(PNL.MARKETING,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\",IF("+ms+"<=12,('🎛️ Drivers'!B66*(1-'🎛️ Drivers'!B117)+'🎛️ Drivers'!B67)/12,('🎛️ Drivers'!B66*(1-'🎛️ Drivers'!B117)+'🎛️ Drivers'!B67)*'🎛️ Drivers'!B69/12))")
+      .setFormula("=IF("+ms+">"+HOR+",\"\",IF("+ms+"<=12,('🎛️ Drivers'!"+DR.EVENTS+"*(1-'🎛️ Drivers'!"+DR.TRAVEL_EVENTS_PCT+")+'🎛️ Drivers'!"+DR.DIGITAL+")/12,('🎛️ Drivers'!"+DR.EVENTS+"*(1-'🎛️ Drivers'!"+DR.TRAVEL_EVENTS_PCT+")+'🎛️ Drivers'!"+DR.DIGITAL+")*'🎛️ Drivers'!"+DR.MKTG_Y2+"/12))")
       .setNumberFormat("$#,##0");
     sh.getRange(PNL.TRAVEL,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+REV_TAB+"!"+entLogL+dRow+",0)*'🎛️ Drivers'!B113"
-        +"+IF("+ms+"<=12,'🎛️ Drivers'!B66*'🎛️ Drivers'!B117/12,'🎛️ Drivers'!B66*'🎛️ Drivers'!B117*'🎛️ Drivers'!B69/12))")
+      .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+REV_TAB+"!"+entLogL+dRow+",0)*'🎛️ Drivers'!"+DR.TRAVEL_ENT
+        +"+IF("+ms+"<=12,'🎛️ Drivers'!"+DR.EVENTS+"*'🎛️ Drivers'!"+DR.TRAVEL_EVENTS_PCT+"/12,'🎛️ Drivers'!"+DR.EVENTS+"*'🎛️ Drivers'!"+DR.TRAVEL_EVENTS_PCT+"*'🎛️ Drivers'!"+DR.MKTG_Y2+"/12))")
       .setNumberFormat("$#,##0");
     sh.getRange(PNL.SM_SUBTOTAL,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\","+C+PNL.SALES_PAYROLL+"+"+C+PNL.COMMISSION+"+"+C+PNL.MARKETING+"+"+C+PNL.TRAVEL+")")
+      .setFormula("=IF("+ms+">"+HOR+",\"\","+C+PNL.SALES_PAYROLL+"+"+C+PNL.COMMISSION+"+"+C+PNL.MKTG_PAYROLL+"+"+C+PNL.MARKETING+"+"+C+PNL.TRAVEL+")")
       .setNumberFormat("$#,##0").setFontWeight("bold").setBackground("#F2F3F4");
 
     sh.getRange(PNL.GA_PAYROLL,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"10)").setNumberFormat("$#,##0");
+      .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"12)").setNumberFormat("$#,##0");
     sh.getRange(PNL.TOOLING,col)
       .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"3*'🎛️ Drivers'!"+DR.TOOLING+")").setNumberFormat("$#,##0");
     sh.getRange(PNL.PROF_FEES,col)
       .setFormula("=IF("+ms+">"+HOR+",\"\","+"'🎛️ Drivers'!"+DR.PROF_FEES+"/12)").setNumberFormat("$#,##0");
     sh.getRange(PNL.CO_SW,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"12*'🎛️ Drivers'!"+DR.CO_SOFTWARE+")").setNumberFormat("$#,##0");
+      .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"14*'🎛️ Drivers'!"+DR.CO_SOFTWARE+")").setNumberFormat("$#,##0");
     if(m===1){
       sh.getRange(PNL.RECRUITING,col).setFormula("=IF(1>"+HOR+",\"\",0)").setNumberFormat("$#,##0");
       sh.getRange(PNL.HARDWARE,col).setFormula("=IF(1>"+HOR+",\"\",0)").setNumberFormat("$#,##0");
     } else {
       sh.getRange(PNL.RECRUITING,col)
-        .setFormula("=IF("+ms+">"+HOR+",\"\","+"MAX(0,'👥 Headcount'!"+C+"12-'👥 Headcount'!"+Cp+"12)*IFERROR('👥 Headcount'!"+C+"11/'👥 Headcount'!"+C+"12/'🎛️ Drivers'!"+DR.LOADED_MULT+"*12,0)*'🎛️ Drivers'!"+DR.RECRUIT_PCT+")")
+        .setFormula("=IF("+ms+">"+HOR+",\"\","+"MAX(0,'👥 Headcount'!"+C+"14-'👥 Headcount'!"+Cp+"14)*IFERROR('👥 Headcount'!"+C+"13/'👥 Headcount'!"+C+"14/'🎛️ Drivers'!"+DR.LOADED_MULT+"*12,0)*'🎛️ Drivers'!"+DR.RECRUIT_PCT+")")
         .setNumberFormat("$#,##0");
       sh.getRange(PNL.HARDWARE,col)
-        .setFormula("=IF("+ms+">"+HOR+",\"\","+"MAX(0,'👥 Headcount'!"+C+"12-'👥 Headcount'!"+Cp+"12)*'🎛️ Drivers'!"+DR.HW_NEW_HIRE+")")
+        .setFormula("=IF("+ms+">"+HOR+",\"\","+"MAX(0,'👥 Headcount'!"+C+"14-'👥 Headcount'!"+Cp+"14)*'🎛️ Drivers'!"+DR.HW_NEW_HIRE+")")
         .setNumberFormat("$#,##0");
     }
     sh.getRange(PNL.GA_SUBTOTAL,col)
@@ -194,7 +197,7 @@ function setupPnL(ss) {
       .setNumberFormat("$#,##0").setFontWeight("bold");
 
     sh.getRange(PNL.HEADCOUNT,col)
-      .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"12)").setNumberFormat("0");
+      .setFormula("=IF("+ms+">"+HOR+",\"\","+"'👥 Headcount'!"+C+"14)").setNumberFormat("0");
     sh.getRange(PNL.ARR_PER_EMP,col)
       .setFormula("=IF("+ms+">"+HOR+",\"\",IFERROR("+C+PNL.ARR+"/"+C+PNL.HEADCOUNT+",0))")
       .setNumberFormat("$#,##0").setFontWeight("bold").setBackground("#E8F8F5");
@@ -245,7 +248,7 @@ function _formatPnL(sh,MONTHS) {
   [PNL.SUB_ARR_MOVE,PNL.SUB_RD,PNL.SUB_SM,PNL.SUB_GA].forEach(function(r){sh.setRowHeight(r,21);});
   [PNL.MRR,PNL.ARR,PNL.NRR,PNL.GROSS_PROFIT,PNL.TOTAL_OPEX,PNL.EBITDA,PNL.BURN_MULTIPLE,PNL.RULE_OF_40].forEach(function(r){sh.setRowHeight(r,22);});
   [PNL.YOY_GROWTH,PNL.NEW_ARR,PNL.CHURN_ARR,PNL.EXP_ARR,PNL.INFRA,PNL.CS_PAYROLL,PNL.ENG_PAYROLL,
-   PNL.SALES_PAYROLL,PNL.COMMISSION,PNL.MARKETING,PNL.TRAVEL,
+   PNL.SALES_PAYROLL,PNL.COMMISSION,PNL.MKTG_PAYROLL,PNL.MARKETING,PNL.TRAVEL,
    PNL.GA_PAYROLL,PNL.TOOLING,PNL.PROF_FEES,PNL.CO_SW,PNL.RECRUITING,PNL.HARDWARE,
    PNL.INTEREST_INCOME,PNL.HEADCOUNT,PNL.RD_PCT_ARR,PNL.SM_PCT_ARR,PNL.GA_PCT_ARR]
     .forEach(function(r){sh.getRange(r,1).setFontWeight("normal").setFontColor("#444444");});
@@ -261,7 +264,7 @@ function _formatPnL(sh,MONTHS) {
   });
   var stripeRows=[PNL.MRR,PNL.ARR,PNL.YOY_GROWTH,PNL.NEW_ARR,PNL.CHURN_ARR,PNL.EXP_ARR,PNL.NET_NEW_ARR,PNL.NRR,
     PNL.INFRA,PNL.CS_PAYROLL,PNL.TOTAL_COGS,PNL.GROSS_PROFIT,PNL.GROSS_MARGIN,
-    PNL.ENG_PAYROLL,PNL.RD_SUBTOTAL,PNL.SALES_PAYROLL,PNL.COMMISSION,PNL.MARKETING,PNL.TRAVEL,PNL.SM_SUBTOTAL,
+    PNL.ENG_PAYROLL,PNL.RD_SUBTOTAL,PNL.SALES_PAYROLL,PNL.COMMISSION,PNL.MKTG_PAYROLL,PNL.MARKETING,PNL.TRAVEL,PNL.SM_SUBTOTAL,
     PNL.GA_PAYROLL,PNL.TOOLING,PNL.PROF_FEES,PNL.CO_SW,PNL.RECRUITING,PNL.HARDWARE,PNL.GA_SUBTOTAL,PNL.TOTAL_OPEX,
     PNL.EBITDA,PNL.EBITDA_MARGIN,PNL.CUMUL_BURN,PNL.HEADCOUNT,PNL.ARR_PER_EMP,PNL.BURN_MULTIPLE,PNL.RULE_OF_40,PNL.RD_PCT_ARR,PNL.SM_PCT_ARR,PNL.GA_PCT_ARR];
   stripeRows.forEach(function(r,i){sh.getRange(r,1).setBackground(i%2===0?"#FFFFFF":"#F8F9FA");});

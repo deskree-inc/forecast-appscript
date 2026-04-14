@@ -25,11 +25,11 @@ Use [Cursor](https://cursor.com/) (or any editor) on **this git repo** when you 
 |---|-------------------------------------|--------------------------------|
 | **Goal** | Change behavior: formulas, new drivers, benchmarks, sidebar, setup tabs, `DR` row maps, revenue/headcount logic | Try different **assumptions** using the **same** model: funding, ACVs, segments, horizon, etc. |
 | **What you edit** | Files in this repo: `*.gs`, `ScenarioSidebarView.html` | JSON that matches the v3.1 scenario shape (see [`scenarios/scenario-template.json`](scenarios/scenario-template.json) or [`scenarios/7m-round.json`](scenarios/7m-round.json)) |
-| **How it gets into Sheets** | **`clasp push`** uploads code to the bound Apps Script project; reload the spreadsheet | **No deploy:** open the spreadsheet → **📊 Forecast → Open Scenario Loader** (menu label is `APP_MENU_LABEL` in `ModelConstants.gs`) → **Load from sheet** or paste JSON → **Load into Sheet**. Optionally copy JSON from this repo or from an AI chat. |
-| **Uses AI how?** | Cursor / Copilot / chat **on the codebase**: refactor `Benchmarks.gs`, add a metric, fix `SetupDrivers.gs`, explain `ModelConstants.gs` | ChatGPT / Claude / etc. **draft or tweak scenario JSON** from a plain-English brief; you paste into the sidebar. You can also **Export** current Drivers JSON from the loader, edit in the AI, and paste back. |
+| **How it gets into Sheets** | **`clasp push`** uploads code to the bound Apps Script project; reload the spreadsheet | **No deploy:** open the spreadsheet → **📊 Forecast → Open Scenario Manager** (menu label is `APP_MENU_LABEL` in `ModelConstants.gs`) → **Load from sheet** or paste JSON → **Load into Sheet**. Optionally copy JSON from this repo or from an AI chat. |
+| **Uses AI how?** | Cursor / Copilot / chat **on the codebase**: refactor `Benchmarks.gs`, add a metric, fix `SetupDrivers.gs`, explain `ModelConstants.gs` | ChatGPT / Claude / etc. **draft or tweak scenario JSON** from a plain-English brief; you paste into the sidebar. You can also **Export** current Drivers JSON from the scenario manager, edit in the AI, and paste back. |
 | **Requires clasp?** | **Yes**, to sync local edits to Apps Script (unless you paste into the browser editor by hand) | **No** for trying scenarios in a Sheet someone already shared. **Yes** only if you also want to version JSON in git or change code. |
 
-**Rule of thumb:** If you need to **adjust or change the behavior of the forecast** (new calculations, different sheet layout, benchmark rules, loader fields), you work **in this repo** and **push Apps Script** with clasp. If you **do not** need functionality changes—only different numbers and assumptions—you can **iterate with AI-generated scenarios**, load them in Google Sheets, run **Check Benchmarks**, and repeat **without** touching `.gs` files or running `clasp push`.
+**Rule of thumb:** If you need to **adjust or change the behavior of the forecast** (new calculations, different sheet layout, benchmark rules, scenario JSON fields), you work **in this repo** and **push Apps Script** with clasp. If you **do not** need functionality changes—only different numbers and assumptions—you can **iterate with AI-generated scenarios**, load them in Google Sheets, run **Check Benchmarks**, and repeat **without** touching `.gs` files or running `clasp push`.
 
 ```mermaid
 flowchart LR
@@ -41,9 +41,9 @@ flowchart LR
   end
   subgraph scenarioPath [Scenario path]
     Json[Scenario JSON]
-    Loader[Scenario sidebar loader]
+    Mgr[Scenario manager]
     Drivers[Drivers inputs]
-    Json --> Loader --> Drivers
+    Json --> Mgr --> Drivers
   end
 ```
 
@@ -89,10 +89,10 @@ The model follows **inputs → calculations → outputs**: keep assumptions in *
 
 From `ScenarioSidebar.gs` → `onOpen()`, the **📊 Forecast** menu (rename via `APP_MENU_LABEL` in `ModelConstants.gs`) provides:
 
-1. **Open Scenario Loader** — HTML sidebar to apply a scenario or inspect **current model state** (`getCurrentScenario()`).
+1. **Open Scenario Manager** — HTML sidebar to apply a scenario or inspect **current model state** (`getCurrentScenario()`).
 2. **Check Benchmarks** — runs `runBenchmarks()` and fills **🚦 Benchmarks** with traffic-light style checks (e.g. CAC payback, LTV:CAC, implied NRR vs churn/expansion, growth vs Bessemer-style heuristics, ARR vs capital raised, AE account load, gross margin, burn multiple when wired).
 3. **Rebuild model (run setup)…** — confirms, then runs `setupFinancialModel()` (same as in **Extensions → Apps Script**). Clears and rebuilds model tabs; duplicate the file or export data first if you need to keep current values.
-4. **Enter investor view (hide internal tabs)** — hides **Drivers**, **Headcount**, **Funding**, **Benchmarks**, and **Start here**; opens **`📋 For investors`** (external how-to copy in `SetupInvestorBrief.gs`). Same as the **Investor view** buttons in the sidebar.
+4. **Enter investor view (hide internal tabs)** — hides **Drivers**, **Headcount**, **Funding**, **Benchmarks**, and **Start here**; opens **`📋 For investors`** (external how-to copy in `SetupInvestorBrief.gs`).
 5. **Show all internal sheets** — unhides those tabs and **Start here**, and activates **Drivers**.
 
 After loading a scenario, the script suggests running **Check Benchmarks** before sharing numbers externally.
@@ -105,9 +105,9 @@ Use **Enter investor view** before screen sharing or when you want recipients to
 - **Sharing:** Anyone with **edit** access can **unhide** tabs (View → Hidden sheets). Prefer **Viewer** on the file for external audiences if you need stronger presentation control. This is not a substitute for legal/financial redaction.
 - **In-sheet button (optional):** **Insert → Drawing** (or image), save, select it, **⋮ → Assign script** → enter `showInvestorView` or `showInternalSheets` for one-click triggers without opening the sidebar.
 
-## Scenario sidebar
+## Scenario manager (sidebar)
 
-`applyScenario` / `getCurrentScenario` in `ScenarioSidebar.gs` read and write **all blue Drivers inputs**: **timing** (forecast start, first MM/ENT client dates), **Section L** annual ARR targets (`annualArrTargets`), **ARR / MoM / horizon**, **funding rounds**, **interest rate & opening cash**, **ICP segments**, **logo growth** (`logoGrowth` or legacy `logoRamp`), **FDE capacity**, **logo back-calculation** (quotas, attainment, MM % of ARR), **maintenance ratios**, **headcount** defaults and up to **ten positions**, **Section H** scaling rules (`headcountScaling`), **existing book**, **marketing** (incl. Y2 multiplier), **infrastructure**, **Section J** OpEx drivers (`opex`), and **commission**. Omit a top-level key or nested field to leave those cells unchanged when loading. The HTML file name in Apps Script must stay **`ScenarioSidebarView`** (matching `createTemplateFromFile("ScenarioSidebarView")`).
+`applyScenario` / `getCurrentScenario` in `ScenarioSidebar.gs` round-trip **all blue Drivers inputs**: **timing** (`timing.forecastStart`, first MM/ENT client dates — use ISO `yyyy-MM-dd`; import parses them as **calendar dates** in your script timezone so values match the sheet), **Section L** (`annualArrTargets`), **MoM growth & horizon** (`arrTargets.momGrowthRate`, `meta.forecastHorizon`), **funding rounds**, **interest rate & opening cash**, **ICP segments**, **logo growth** (`logoGrowth` or legacy `logoRamp`), **FDE capacity**, **logo back-calculation**, **maintenance ratios**, **headcount** defaults and up to **ten positions**, **Section H** (`headcountScaling`), **existing book**, **marketing**, **infrastructure**, **Section J** (`opex`), and **commission**. **B12 (target ARR)** is a **formula** driven by Section L — the export may include `arrTargets.targetARR` as a **read-only snapshot** for context; **loads do not write B12** so the formula stays intact. Omit a top-level key or nested field to leave those cells unchanged when loading. The HTML file name in Apps Script must stay **`ScenarioSidebarView`** (matching `createTemplateFromFile("ScenarioSidebarView")`).
 
 ## Setup in Google Sheets
 
@@ -117,7 +117,7 @@ Use **Enter investor view** before screen sharing or when you want recipients to
 4. **File → Add file → HTML**, name **`ScenarioSidebarView`**, paste `ScenarioSidebarView.html`.
 5. Save.
 6. Run **`setupFinancialModel`** once and authorize when prompted. If setup hangs, open **Executions** in the script editor and inspect **Logs** for the last completed phase.
-7. Reload the spreadsheet; use the **📊 Forecast** menu (or your `APP_MENU_LABEL`) for the scenario loader and benchmark check.
+7. Reload the spreadsheet; use the **📊 Forecast** menu (or your `APP_MENU_LABEL`) for the scenario manager and benchmark check.
 
 ## Deploy with clasp (local → Google Sheets)
 

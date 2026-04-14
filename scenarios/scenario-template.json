@@ -98,6 +98,13 @@
                 "hwCostOneTime": 0,
                 "insurancePerMo": 0
             },
+            "marketing": {
+                "startHC": 0,
+                "annualSalary": 0,
+                "swCostPerMo": 0,
+                "hwCostOneTime": 0,
+                "insurancePerMo": 0
+            },
             "gAndA": {
                 "startHC": 0,
                 "annualSalary": 0,
@@ -131,7 +138,8 @@
     "marketing": {
         "digitalAnnual": 0,
         "eventsAnnual": 0,
-        "mktgY2Multiplier": 1.5
+        "mktgY2Multiplier": 1.5,
+        "mktgSpendPerFte": 50000
     },
     "infrastructure": {
         "toolingPerEngineerPerMo": 0,

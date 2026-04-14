@@ -36,7 +36,7 @@ function setupDrivers(ss) {
   secHdrStyled(11,"B — ARR Targets");
   lbl(12,1,"Target ARR (auto from Section L)");
   sh.getRange(12,2)
-    .setFormula("=IFERROR(IF(IF(B14<=12,B132,IF(B14<=24,B133,IF(B14<=36,B134,IF(B14<=48,B135,B136))))=0,\"⚠️ Set target in Section L\",IF(B14<=12,B132,IF(B14<=24,B133,IF(B14<=36,B134,IF(B14<=48,B135,B136))))),\"⚠️ Set target in Section L\")")
+    .setFormula("=IFERROR(IF(IF(B14<=12,B134,IF(B14<=24,B135,IF(B14<=36,B136,IF(B14<=48,B137,B138))))=0,\"⚠️ Set target in Section L\",IF(B14<=12,B134,IF(B14<=24,B135,IF(B14<=36,B136,IF(B14<=48,B137,B138))))),\"⚠️ Set target in Section L\")")
     .setBackground("#E8F8F5").setFontWeight("bold").setNumberFormat("$#,##0").setFontColor("#1D9E75");
   var b12Rules = sh.getConditionalFormatRules();
   b12Rules.push(SpreadsheetApp.newConditionalFormatRule()
@@ -48,7 +48,9 @@ function setupDrivers(ss) {
   note3(12,"Auto-selected from Section L based on Forecast Horizon (B14). Do not edit this cell.",2);
   sh.setRowHeight(12,36);
   lbl(13,1,"Target MoM Growth Rate");       inp(sh,13,2,0.20,"0%");
+  note3(13,"Implied compound monthly ARR growth used for planning checks. Section L sets explicit year-end ARR targets; this rate is a secondary planning lever.",2);
   lbl(14,1,"Forecast Horizon (months)");    inp(sh,14,2,24);
+  note3(14,"Number of months in the active forecast window (max 60). B12 picks the matching Section L target; Headcount and Revenue use this horizon.",2);
   [13,14].forEach(function(r){sh.setRowHeight(r,22);});
 
   // C: ICP Segments
@@ -129,7 +131,7 @@ function setupDrivers(ss) {
   ["Department","Start HC","Annual Salary ($)","SW Cost/mo ($)","HW One-time ($)","Insurance/mo ($)"].forEach(function(h,i){hdr(sh,46,i+1,h,"#1F618D");});
   sh.setRowHeight(46,22);
   [["Engineering",4,180000,300,2500,200],["Sales",2,120000,150,1500,200],
-   ["CS / FDE-CSE",1,90000,100,1500,200],["G&A",2,100000,80,1000,200]]
+   ["CS / FDE-CSE",1,90000,100,1500,200],["Marketing",1,95000,120,1500,200],["G&A",2,100000,80,1000,200]]
     .forEach(function(d,i){
       var r=47+i;
       sh.getRange(r,1).setValue(d[0]).setFontWeight("bold").setFontColor("#444444");
@@ -142,9 +144,12 @@ function setupDrivers(ss) {
   secHdrStyled(52,"D2 — Individual Positions (optional)");
   ["Title","Department","Start Date","Annual Salary ($)","SW Cost/mo ($)"].forEach(function(h,i){hdr(sh,53,i+1,h,"#1F618D");});
   sh.setRowHeight(53,22);
+  var deptList = ["Engineering","Sales","CS / FDE-CSE","Marketing","G&A"];
+  var deptRule = SpreadsheetApp.newDataValidation().requireValueInList(deptList,true).setAllowInvalid(false).build();
   for(var i=0;i<10;i++){
-    var r=54+i;
+    var r=55+i;
     [1,2].forEach(function(c){sh.getRange(r,c).setBackground("#EBF5FB");});
+    sh.getRange(r,2).setDataValidation(deptRule);
     sh.getRange(r,3).setBackground("#EBF5FB").setNumberFormat("MMM YYYY");
     sh.getRange(r,4).setBackground("#EBF5FB").setNumberFormat("$#,##0");
     sh.getRange(r,5).setBackground("#EBF5FB").setNumberFormat("$#,##0");
@@ -154,36 +159,42 @@ function setupDrivers(ss) {
   // E
   secHdrStyled(65,"E — Marketing Budget (annual)");
   lbl(66,1,"Events Budget ($)");   inp(sh,66,2,50000,"$#,##0");
+  note3(66,"Annual $ for field marketing, conferences, and sponsorships (before travel carve-out in B119). Feeds P&L marketing spend and marketing headcount sizing.",3);
   lbl(67,1,"Digital / Other ($)"); inp(sh,67,2,30000,"$#,##0");
+  note3(67,"Annual $ for paid search, content, tools, and non-event demand gen. Combined with Events → total program budget for staffing ratio (B71) and P&L.",3);
   lbl(68,1,"Events as % of Marketing");
   sh.getRange(68,2).setFormula("=B66/(B66+B67)").setNumberFormat("0%");
   sh.getRange(68,1).setFontWeight("bold").setFontColor("#444444");
+  note3(68,"Share of Events + Digital that is Events. Used for reporting only; travel to events uses B119.",2);
   lbl(69,1,"Marketing budget growth Y2 (x)"); inp(sh,69,2,1.5,"0.0");
-  note3(69,"1.5 = 50% more spend in Year 2 vs Year 1.",2); sh.setRowHeight(69,36);
+  note3(69,"Multiplier on total program budget (Events + Digital) for forecast months 13+ vs months 1–12. 1.5 = 50% more spend in Year 2.",2); sh.setRowHeight(69,36);
+  lbl(70,1,"Marketing HC: $ annual spend per FTE ($)"); inp(sh,70,2,50000,"$#,##0");
+  note3(70,"Headcount = CEILING((Events+Digital annual) ÷ this $, 1) per year bucket, vs. Section D seed. Example: 50000 = one marketer per $50k of annual program budget.",3); sh.setRowHeight(70,36);
   [66,67,68].forEach(function(r){sh.setRowHeight(r,22);});
 
   // F
-  secHdrStyled(70,"F — Infrastructure Costs");
-  lbl(71,1,"Infra / customer / mo ($)");   inp(sh,71,2,50,"$#,##0");
-  lbl(72,1,"Tooling / engineer / mo ($)"); inp(sh,72,2,200,"$#,##0");
-  [71,72].forEach(function(r){sh.setRowHeight(r,22);});
+  secHdrStyled(72,"F — Infrastructure Costs");
+  lbl(73,1,"Infra / customer / mo ($)");   inp(sh,73,2,50,"$#,##0");
+  lbl(74,1,"Tooling / engineer / mo ($)"); inp(sh,74,2,200,"$#,##0");
+  [73,74].forEach(function(r){sh.setRowHeight(r,22);});
 
   // G
-  secHdrStyled(74,"G — Sales Commission");
-  lbl(75,1,"Commission (% of new-logo ARR)"); inp(sh,75,2,0.10,"0%");
-  sh.setRowHeight(75,22);
+  secHdrStyled(76,"G — Sales Commission");
+  lbl(77,1,"Commission (% of new-logo ARR)"); inp(sh,77,2,0.10,"0%");
+  note3(77,"% of first-year ARR from new logos paid to sales. Drives variable S&M in P&L.",2);
+  sh.setRowHeight(77,22);
 
   // Legend
-  secHdrStyled(78,"Legend");
-  sh.getRange(79,1).setValue("🔵 Blue = Input").setBackground("#EBF5FB").setFontColor("#1A5276").setFontWeight("bold");
-  sh.getRange(79,2).setValue("⚫ Black = Formula").setFontWeight("bold").setFontColor("#444444");
-  sh.getRange(79,3).setValue("🚦 Run Benchmarks after every scenario change").setFontStyle("italic").setFontColor("#888");
-  sh.setRowHeight(79,22);
+  secHdrStyled(80,"Legend");
+  sh.getRange(81,1).setValue("🔵 Blue = Input").setBackground("#EBF5FB").setFontColor("#1A5276").setFontWeight("bold");
+  sh.getRange(81,2).setValue("⚫ Black = Formula").setFontWeight("bold").setFontColor("#444444");
+  sh.getRange(81,3).setValue("🚦 Run Benchmarks after every scenario change").setFontStyle("italic").setFontColor("#888");
+  sh.setRowHeight(81,22);
 
   // H
-  secHdrStyled(81,"H — Headcount Scaling Rules");
-  ["Driver","Value","Industry Benchmark / Notes"].forEach(function(h,i){hdr(sh,82,i+1,h,"#1F618D");});
-  sh.setRowHeight(82,22);
+  secHdrStyled(83,"H — Headcount Scaling Rules");
+  ["Driver","Value","Industry Benchmark / Notes"].forEach(function(h,i){hdr(sh,84,i+1,h,"#1F618D");});
+  sh.setRowHeight(84,22);
   [["Product engineers per active MM customer",15,"0","1 eng per 15 MM customers. Range: 10–20."],
    ["Product engineers per active ENT customer",3,"0","1 eng per 3 ENT customers. Range: 2–5."],
    ["R&D engineers: 1 per N product engineers",3,"0","~25% of eng capacity on platform."],
@@ -198,48 +209,48 @@ function setupDrivers(ss) {
    ["FDE/CSE ongoing support: MM customers per person",20,"0","1 FDE/CSE per 20 active MM customers."],
    ["FDE/CSE ongoing support: ENT customers per person",4,"0","1 FDE/CSE per 4 active ENT customers."]]
     .forEach(function(row,i){
-      var r=83+i;
+      var r=85+i;
       lbl(r,1,row[0]);
       inp(sh,r,2,row[1],row[2]);
       note3(r,row[3],3);
       sh.setRowHeight(r,36);
     });
-  sh.getRange(97,1,1,3).merge()
+  sh.getRange(99,1,1,3).merge()
     .setValue("Section H drives automated hiring in Headcount. These are ratios only.")
     .setFontStyle("italic").setFontColor("#888").setWrap(true);
-  sh.setRowHeight(97,28);
+  sh.setRowHeight(99,28);
 
   // I
-  secHdrStyled(99,"I — Existing Book at Forecast Start (day 1 of forecast)");
-  ["Metric","Value","Notes"].forEach(function(h,i){hdr(sh,100,i+1,h,"#1F618D");});
-  sh.setRowHeight(100,22);
-  lbl(101,1,"Existing MM Logos"); inp(sh,101,2,3); note3(101,"Number of MM customers live at forecast start");
-  lbl(102,1,"Existing MM ACV ($)"); inp(sh,102,2,65000,"$#,##0"); note3(102,"Likely lower than projected new-deal ACV — reflect actuals");
-  lbl(103,1,"Existing ENT Logos"); inp(sh,103,2,1); note3(103,"Number of ENT customers live at forecast start");
-  lbl(104,1,"Existing ENT ACV ($)"); inp(sh,104,2,200000,"$#,##0"); note3(104,"Likely lower than projected new-deal ACV — reflect actuals");
-  lbl(105,1,"Existing MM ARR ($)");
-  sh.getRange(105,2).setFormula("=B101*B102").setNumberFormat("$#,##0").setBackground("#E8F8F5").setFontWeight("bold");
-  note3(105,"Auto-calculated: Existing MM Logos × Existing MM ACV");
-  lbl(106,1,"Existing ENT ARR ($)");
-  sh.getRange(106,2).setFormula("=B103*B104").setNumberFormat("$#,##0").setBackground("#E8F8F5").setFontWeight("bold");
-  note3(106,"Auto-calculated: Existing ENT Logos × Existing ENT ACV");
-  lbl(107,1,"Total Existing ARR ($)");
-  sh.getRange(107,2).setFormula("=B105+B106").setNumberFormat("$#,##0").setBackground("#D5F5E3").setFontWeight("bold");
-  note3(107,"Auto-sum. ARR base on day 1 of the forecast.",2); sh.setRowHeight(107,28);
-  [101,102,103,104,105,106].forEach(function(r){sh.setRowHeight(r,22);});
-  sh.getRange(109,1,1,3).merge()
+  secHdrStyled(101,"I — Existing Book at Forecast Start (day 1 of forecast)");
+  ["Metric","Value","Notes"].forEach(function(h,i){hdr(sh,102,i+1,h,"#1F618D");});
+  sh.setRowHeight(102,22);
+  lbl(103,1,"Existing MM Logos"); inp(sh,103,2,3); note3(103,"Number of MM customers live at forecast start");
+  lbl(104,1,"Existing MM ACV ($)"); inp(sh,104,2,65000,"$#,##0"); note3(104,"Likely lower than projected new-deal ACV — reflect actuals");
+  lbl(105,1,"Existing ENT Logos"); inp(sh,105,2,1); note3(105,"Number of ENT customers live at forecast start");
+  lbl(106,1,"Existing ENT ACV ($)"); inp(sh,106,2,200000,"$#,##0"); note3(106,"Likely lower than projected new-deal ACV — reflect actuals");
+  lbl(107,1,"Existing MM ARR ($)");
+  sh.getRange(107,2).setFormula("=B103*B104").setNumberFormat("$#,##0").setBackground("#E8F8F5").setFontWeight("bold");
+  note3(107,"Auto-calculated: Existing MM Logos × Existing MM ACV");
+  lbl(108,1,"Existing ENT ARR ($)");
+  sh.getRange(108,2).setFormula("=B105*B106").setNumberFormat("$#,##0").setBackground("#E8F8F5").setFontWeight("bold");
+  note3(108,"Auto-calculated: Existing ENT Logos × Existing ENT ACV");
+  lbl(109,1,"Total Existing ARR ($)");
+  sh.getRange(109,2).setFormula("=B107+B108").setNumberFormat("$#,##0").setBackground("#D5F5E3").setFontWeight("bold");
+  note3(109,"Auto-sum. ARR base on day 1 of the forecast.",2); sh.setRowHeight(109,28);
+  [103,104,105,106,107,108].forEach(function(r){sh.setRowHeight(r,22);});
+  sh.getRange(111,1,1,3).merge()
     .setValue("Churn and expansion for existing customers use the same rates as Sections C (ICP Segments).")
     .setFontStyle("italic").setFontColor("#888").setWrap(true);
-  sh.setRowHeight(109,36);
+  sh.setRowHeight(111,36);
 
   // J
-  secHdrStyled(111,"J — Additional OpEx Drivers");
-  [["Recruiting cost (% of annual salary per new hire)", "B112", 0.15, "0%",    "15% = agency fee. Standard for tech roles."],
-   ["Travel per ENT deal closed ($)",                    "B113", 5000, "$#,##0","Flights + hotel per ENT close. Typical: $3K–$8K."],
-   ["Professional fees — annual ($)",                    "B114", 60000,"$#,##0","Legal + accounting + audit. ~$5K/mo at seed stage."],
-   ["Company software per employee per month ($)",        "B115", 50,   "$#,##0","Slack, Notion, HR tools etc. Scales with total HC."],
-   ["Hardware per new hire — one-time ($)",               "B116", 2000, "$#,##0","Laptop + peripherals. Triggered on month of hire."],
-   ["Events travel as % of events budget",                "B117", 0.40, "0%",   "40% = flights + hotels to attend events."]]
+  secHdrStyled(113,"J — Additional OpEx Drivers");
+  [["Recruiting cost (% of annual salary per new hire)", "B114", 0.15, "0%",    "15% = agency fee. Standard for tech roles."],
+   ["Travel per ENT deal closed ($)",                    "B115", 5000, "$#,##0","Flights + hotel per ENT close. Typical: $3K–$8K."],
+   ["Professional fees — annual ($)",                    "B116", 60000,"$#,##0","Legal + accounting + audit. ~$5K/mo at seed stage."],
+   ["Company software per employee per month ($)",        "B117", 50,   "$#,##0","Slack, Notion, HR tools etc. Scales with total HC."],
+   ["Hardware per new hire — one-time ($)",               "B118", 2000, "$#,##0","Laptop + peripherals. Triggered on month of hire."],
+   ["Events travel as % of events budget",                "B119", 0.40, "0%",   "40% = flights + hotels to attend events."]]
     .forEach(function(row){
       var rowNum = parseInt(row[1].replace("B",""));
       lbl(rowNum,1,row[0]);
@@ -250,14 +261,16 @@ function setupDrivers(ss) {
 
   // ── K — Funding Rounds ─────────────────────────────────────
   // ✏️ CHANGED: Single $7M Seed round, May 2026. Rounds 2 & 3 cleared.
-  secHdrStyled(119,"K — Funding Rounds (up to 3) & Interest Rate");
-  ["Round Name","Amount Raised ($)","Close Date","Notes"].forEach(function(h,i){hdr(sh,120,i+1,h,"#1F618D");});
-  sh.setRowHeight(120,22);
+  secHdrStyled(121,"K — Funding Rounds (up to 3) & Interest Rate");
+  // Clear validations on header row — C122 may still have requireDate from an older layout; "Close Date" text would fail.
+  sh.getRange(122,1,1,4).clearDataValidations();
+  ["Round Name","Amount Raised ($)","Close Date","Notes"].forEach(function(h,i){hdr(sh,122,i+1,h,"#1F618D");});
+  sh.setRowHeight(122,22);
   [  ["Seed",  7000000, new Date("2026-05-01"), ""],
    ["",      "",      "",                    ""],
    ["",      "",      "",                    ""]]
     .forEach(function(round,i){
-      var r=121+i;
+      var r=123+i;
       inp(sh,r,1,round[0]);
       if(round[1]){
         inp(sh,r,2,round[1],"$#,##0");
@@ -270,33 +283,34 @@ function setupDrivers(ss) {
       sh.setRowHeight(r,22);
     });
 
-  sh.getRange(124,1,1,5).merge()
+  sh.getRange(126,1,1,5).merge()
     .setValue("Interest Income on Cash Balance")
     .setBackground("#AED6F1").setFontWeight("bold").setFontColor("#1A5276").setFontSize(10)
     .setBorder(true,false,false,false,false,false,"#1A5276",SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  sh.setRowHeight(124,26);
+  sh.setRowHeight(126,26);
 
-  lbl(125,1,"Annual interest rate on cash (%)"); inp(sh,125,2,0.045,"0.0%");
-  note3(125,"Applied to prior month ending cash balance. 4–5% reflects current HYSA/T-bill rates.",3);
-  sh.setRowHeight(125,28);
+  lbl(127,1,"Annual interest rate on cash (%)"); inp(sh,127,2,0.045,"0.0%");
+  note3(127,"Applied to prior month ending cash balance. 4–5% reflects current HYSA/T-bill rates.",3);
+  sh.setRowHeight(127,28);
 
-  lbl(126,1,"Cash on hand at forecast start ($)");
-  inp(sh,126,2,0,"$#,##0");
-  note3(126,"Existing cash in bank on day 1 of forecast. Add any pre-forecast raise here.",3);
-  sh.setRowHeight(126,36);
+  lbl(128,1,"Cash on hand at forecast start ($)");
+  inp(sh,128,2,0,"$#,##0");
+  note3(128,"Existing cash in bank on day 1 of forecast. Add any pre-forecast raise here.",3);
+  sh.setRowHeight(128,36);
 
-  sh.getRange(128,1,1,4).merge()
+  sh.getRange(130,1,1,4).merge()
     .setValue("Rounds feed the 💰 Funding tab automatically. All fields per round must be fully filled or completely blank.")
     .setFontStyle("italic").setFontColor("#888").setWrap(true);
-  sh.setRowHeight(128,36);
+  sh.setRowHeight(130,36);
 
   // ── L — Annual ARR Targets ─────────────────────────────────
   // ✏️ NEW: Y1–Y5 targets. B12 auto-selects the active year based on B14.
-  secHdrStyled(130,"L — Annual ARR Targets (calendar year-end)");
+  secHdrStyled(132,"L — Annual ARR Targets (calendar year-end)");
+  sh.getRange(133,1,1,5).clearDataValidations();
   ["Year","Target ARR ($)","Target Date","Active?","Notes"].forEach(function(h,i){
-    hdr(sh,131,i+1,h,"#1F618D");
+    hdr(sh,133,i+1,h,"#1F618D");
   });
-  sh.setRowHeight(131,22);
+  sh.setRowHeight(133,22);
 
   var arrTargets = [
     ["Year 1",  4000000,   new Date("2026-12-01"), "CEO guidance: $3–5M by Dec 2026"],
@@ -308,7 +322,7 @@ function setupDrivers(ss) {
 
   var horizonThresholds = [12, 24, 36, 48, 60];
   arrTargets.forEach(function(t, i) {
-    var r = 132 + i;
+    var r = 134 + i;
     sh.getRange(r,1).setValue(t[0]).setFontWeight("bold").setFontColor("#444444");
     inp(sh,r,2,t[1],"$#,##0");
     sh.getRange(r,3).setValue(t[2]).setBackground("#EBF5FB").setFontColor("#1A5276").setNumberFormat("MMM YYYY");
@@ -331,7 +345,7 @@ function setupDrivers(ss) {
   // Conditional format — highlight active row green
   var lRules = sh.getConditionalFormatRules();
   for (var i = 0; i < 5; i++) {
-    var r = 132 + i;
+    var r = 134 + i;
     var loMo = i === 0 ? 1 : horizonThresholds[i-1] + 1;
     var hiMo = horizonThresholds[i];
     var cfFormula = i === 0
@@ -347,8 +361,8 @@ function setupDrivers(ss) {
   }
   sh.setConditionalFormatRules(lRules);
 
-  sh.getRange(138,1,1,5).merge()
+  sh.getRange(140,1,1,5).merge()
     .setValue("B12 auto-selects the active year target based on B14 (horizon). Horizon 1–12 → Y1, 13–24 → Y2, 25–36 → Y3, 37–48 → Y4, 49–60 → Y5. Only edit blue cells.")
     .setFontStyle("italic").setFontColor("#888").setWrap(true);
-  sh.setRowHeight(138,44);
+  sh.setRowHeight(140,44);
 }

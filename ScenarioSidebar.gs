@@ -1,11 +1,11 @@
 // ============================================================
-// Scenario sidebar + custom menu (Drivers + DR). Labels: ModelConstants APP_*.
+// Scenario manager sidebar + custom menu (Drivers + DR). Labels: ModelConstants APP_*.
 // ============================================================
 
 function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu(APP_MENU_LABEL)
-    .addItem("Open Scenario Loader", "openScenarioSidebar")
+    .addItem("Open Scenario Manager", "openScenarioSidebar")
     .addItem("🚦 Check Benchmarks",  "runBenchmarks")
     .addItem("🔧 Rebuild model (run setup)…", "runSetupFromMenu")
     .addSeparator()
@@ -39,14 +39,40 @@ function openScenarioSidebar() {
   SpreadsheetApp.getUi().showSidebar(html);
 }
 
+/**
+ * Parses JSON / sheet values into a Date for writing to the sheet.
+ * ISO date-only strings ("yyyy-MM-dd") are interpreted as calendar dates in the script
+ * timezone — avoids UTC midnight shifting the day (e.g. forecast start showing wrong month).
+ */
+function scenarioParseDateForSheet_(val) {
+  if (val === undefined || val === null || val === "") return null;
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+  if (typeof val === "number" && !isNaN(val)) {
+    var dn = new Date(val);
+    return isNaN(dn.getTime()) ? null : dn;
+  }
+  var s = String(val).trim();
+  var iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) {
+    var y = parseInt(iso[1], 10);
+    var mo = parseInt(iso[2], 10);
+    var day = parseInt(iso[3], 10);
+    if (y >= 1900 && y <= 2200 && mo >= 1 && mo <= 12 && day >= 1 && day <= 31) {
+      return new Date(y, mo - 1, day);
+    }
+  }
+  var d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 /** Cell values can be Date, string, or empty; Utilities.formatDate requires a Date. */
 function scenarioCoerceDate_(val, fallback) {
   var fb = fallback || new Date();
   if (val instanceof Date && !isNaN(val.getTime())) return val;
   if (val === null || val === undefined || val === "") return fb;
   if (typeof val === "string" && val.trim() === "") return fb;
-  var d = new Date(val);
-  return isNaN(d.getTime()) ? fb : d;
+  var parsed = scenarioParseDateForSheet_(val);
+  return parsed || fb;
 }
 
 function scenarioFormatDateIso_(val) {
@@ -65,8 +91,8 @@ function scenarioFormatDateIsoMaybeEmpty_(val) {
 
 function scenarioSetDateCell_(sh, a1, val) {
   if (val === undefined || val === null || val === "") return;
-  var d = val instanceof Date ? val : new Date(val);
-  if (isNaN(d.getTime())) return;
+  var d = scenarioParseDateForSheet_(val);
+  if (!d) return;
   sh.getRange(a1).setValue(d);
 }
 
@@ -97,13 +123,17 @@ function applyScenario(data) {
     if (tm.firstMMClientDate != null) scenarioSetDateCell_(sh, DR.FIRST_MM_CLIENT, tm.firstMMClientDate);
     if (tm.firstEntClientDate != null) scenarioSetDateCell_(sh, DR.FIRST_ENT_CLIENT, tm.firstEntClientDate);
   }
+  // Top-level alias if timing block is missing or omits forecastStart
+  if ((!tm || tm.forecastStart == null) && data.forecastStart != null) {
+    scenarioSetDateCell_(sh, DR.FORECAST_START, data.forecastStart);
+  }
 
   var years = data.annualArrTargets;
   if (years && years.length) {
     for (var yi = 0; yi < Math.min(5, years.length); yi++) {
       var yr = years[yi];
       if (!yr || typeof yr !== "object") continue;
-      var row = 132 + yi;
+      var row = 134 + yi;
       if (yr.targetARR != null) sh.getRange(row, 2).setValue(yr.targetARR);
       if (yr.targetDate != null) scenarioSetDateCell_(sh, "C" + row, yr.targetDate);
       if (yr.notes != null) sh.getRange(row, 5).setValue(yr.notes);
@@ -111,17 +141,17 @@ function applyScenario(data) {
   }
 
   var at = data.arrTargets || {};
-  if (at.targetARR != null) sh.getRange(DR.TARGET_ARR).setValue(at.targetARR);
+  // B12 is a formula (target ARR from Section L); never overwrite — would break the model.
   if (at.momGrowthRate != null) sh.getRange(DR.MOM_GROWTH).setValue(at.momGrowthRate);
 
   var rounds = (data.fundingRounds || []).slice(0, 3);
   for (var i = 0; i < 3; i++) {
-    var r = 121 + i;
+    var r = 123 + i;
     var round = rounds[i];
     if (round) {
       sh.getRange(r, 1).setValue(round.name || "");
       sh.getRange(r, 2).setValue(round.amount || "");
-      sh.getRange(r, 3).setValue(round.closeDate ? new Date(round.closeDate) : "");
+      sh.getRange(r, 3).setValue(round.closeDate ? (scenarioParseDateForSheet_(round.closeDate) || "") : "");
       sh.getRange(r, 4).setValue(round.notes || "");
     } else {
       [1, 2, 3, 4].forEach(function (c) { sh.getRange(r, c).clearContent(); });
@@ -193,6 +223,7 @@ function applyScenario(data) {
     ["engineering", DR.ENG],
     ["sales", DR.SALES],
     ["csSupport", DR.CS],
+    ["marketing", DR.MKTG],
     ["gAndA", DR.GA]
   ];
   var hc = data.headcount;
@@ -213,12 +244,12 @@ function applyScenario(data) {
   if (hc && Array.isArray(hc.positions)) {
     var positions = hc.positions;
     for (var pi = 0; pi < 10; pi++) {
-      var pr = 54 + pi;
+      var pr = 55 + pi;
       var pos = positions[pi];
       if (pos) {
         sh.getRange(pr, 1).setValue(pos.title || "");
         sh.getRange(pr, 2).setValue(pos.dept || "");
-        sh.getRange(pr, 3).setValue(pos.startDate ? new Date(pos.startDate) : "");
+        sh.getRange(pr, 3).setValue(pos.startDate ? (scenarioParseDateForSheet_(pos.startDate) || "") : "");
         sh.getRange(pr, 4).setValue(pos.annualSalary || "");
         sh.getRange(pr, 5).setValue(pos.swCostPerMo || "");
       } else {
@@ -257,6 +288,7 @@ function applyScenario(data) {
     scenarioSetIfDefined_(sh, DR.EVENTS, mk.eventsAnnual);
     scenarioSetIfDefined_(sh, DR.DIGITAL, mk.digitalAnnual);
     scenarioSetIfDefined_(sh, DR.MKTG_Y2, mk.mktgY2Multiplier);
+    scenarioSetIfDefined_(sh, DR.MKTG_SPEND_PER_FTE, mk.mktgSpendPerFte);
   }
 
   var inf = data.infrastructure;
@@ -293,13 +325,13 @@ function getCurrentScenario() {
   var rounds = [];
   var ri;
   for (ri = 0; ri < 3; ri++) {
-    var name = v(121 + ri, 1);
+    var name = v(123 + ri, 1);
     if (name) {
       rounds.push({
         name: name,
-        amount: v(121 + ri, 2),
-        closeDate: scenarioFormatDateIsoMaybeEmpty_(v(121 + ri, 3)),
-        notes: v(121 + ri, 4)
+        amount: v(123 + ri, 2),
+        closeDate: scenarioFormatDateIsoMaybeEmpty_(v(123 + ri, 3)),
+        notes: v(123 + ri, 4)
       });
     }
   }
@@ -307,14 +339,14 @@ function getCurrentScenario() {
   var positions = [];
   var j;
   for (j = 0; j < 10; j++) {
-    var title = v(54 + j, 1);
+    var title = v(55 + j, 1);
     if (title) {
       positions.push({
         title: title,
-        dept: v(54 + j, 2),
-        startDate: scenarioFormatDateIsoMaybeEmpty_(v(54 + j, 3)),
-        annualSalary: v(54 + j, 4),
-        swCostPerMo: v(54 + j, 5)
+        dept: v(55 + j, 2),
+        startDate: scenarioFormatDateIsoMaybeEmpty_(v(55 + j, 3)),
+        annualSalary: v(55 + j, 4),
+        swCostPerMo: v(55 + j, 5)
       });
     }
   }
@@ -325,7 +357,7 @@ function getCurrentScenario() {
   var annualArrTargets = [];
   var yk;
   for (yk = 0; yk < 5; yk++) {
-    var rr = 132 + yk;
+    var rr = 134 + yk;
     annualArrTargets.push({
       targetARR: v(rr, 2),
       targetDate: scenarioFormatDateIsoMaybeEmpty_(v(rr, 3)),
@@ -400,6 +432,10 @@ function getCurrentScenario() {
           startHC: v(DR.CS, 2), annualSalary: v(DR.CS, 3), swCostPerMo: v(DR.CS, 4),
           hwCostOneTime: v(DR.CS, 5), insurancePerMo: v(DR.CS, 6)
         },
+        marketing: {
+          startHC: v(DR.MKTG, 2), annualSalary: v(DR.MKTG, 3), swCostPerMo: v(DR.MKTG, 4),
+          hwCostOneTime: v(DR.MKTG, 5), insurancePerMo: v(DR.MKTG, 6)
+        },
         gAndA: {
           startHC: v(DR.GA, 2), annualSalary: v(DR.GA, 3), swCostPerMo: v(DR.GA, 4),
           hwCostOneTime: v(DR.GA, 5), insurancePerMo: v(DR.GA, 6)
@@ -431,7 +467,8 @@ function getCurrentScenario() {
     marketing: {
       eventsAnnual: sh.getRange(DR.EVENTS).getValue(),
       digitalAnnual: sh.getRange(DR.DIGITAL).getValue(),
-      mktgY2Multiplier: sh.getRange(DR.MKTG_Y2).getValue()
+      mktgY2Multiplier: sh.getRange(DR.MKTG_Y2).getValue(),
+      mktgSpendPerFte: sh.getRange(DR.MKTG_SPEND_PER_FTE).getValue()
     },
     infrastructure: {
       infraPerCustomerPerMo: sh.getRange(DR.INFRA).getValue(),

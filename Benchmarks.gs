@@ -169,7 +169,7 @@ function runBenchmarks() {
   var entNRRv = nrrFn(ent.churn, ent.exp);
   var grr = blendChurn() < 1 ? 1 - blendChurn() : null;
 
-  var entLogoM12 = getHc(12, 16);
+  var entLogoM12 = getHc(12, 18);
   var impliedYoY = yoyFromMoM(momGrowth);
   var bessTarget = bessemerTarget(targetARR);
   var arrFundingRatio = totalFunding > 0 ? targetARR / totalFunding : null;
@@ -259,6 +259,7 @@ function runBenchmarks() {
       sp += num(pl.getRange(PNL.CS_PAYROLL, col).getValue());
       sp += num(pl.getRange(PNL.ENG_PAYROLL, col).getValue());
       sp += num(pl.getRange(PNL.SALES_PAYROLL, col).getValue());
+      sp += num(pl.getRange(PNL.MKTG_PAYROLL, col).getValue());
       sp += num(pl.getRange(PNL.GA_PAYROLL, col).getValue());
       sp += num(pl.getRange(PNL.MARKETING, col).getValue());
     }
@@ -303,7 +304,7 @@ function runBenchmarks() {
   var estAccounts = avgACV > 0 ? Math.round(targetARR / avgACV) : 0;
 
   var fdeHcFromTitles = 0;
-  for (r = 54; r <= 63; r++) {
+  for (r = 55; r <= 64; r++) {
     var title = drv.getRange(r, 1).getValue();
     var dept = drv.getRange(r, 2).getValue();
     var s = (" " + String(title) + " " + String(dept) + " ").toLowerCase();
@@ -313,8 +314,8 @@ function runBenchmarks() {
   var fdeHcEff = fdeHcFromTitles > 0 ? fdeHcFromTitles : csHc12;
 
   var engHC12 = getHc(12, 3);
-  var totalHC1 = getHc(1, 12);
-  var totalHC12 = getHc(12, 12);
+  var totalHC1 = getHc(1, 14);
+  var totalHC12 = getHc(12, 14);
   var engPct = totalHC12 > 0 ? engHC12 / totalHC12 : null;
 
   var arr1 = pl ? num(getPl(1, PNL.ARR)) : 0;

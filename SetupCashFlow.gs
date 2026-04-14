@@ -28,6 +28,7 @@ function setupCashFlow(ss) {
   sh.getRange(CF.PAY_ENG,    1).setValue("  Engineering Payroll");
   sh.getRange(CF.PAY_SALES,  1).setValue("  Sales Payroll");
   sh.getRange(CF.PAY_CS,     1).setValue("  CS / FDE-CSE Payroll");
+  sh.getRange(CF.PAY_MKTG,   1).setValue("  Marketing Payroll");
   sh.getRange(CF.PAY_GA,     1).setValue("  G&A Payroll");
   sh.getRange(CF.COGS_INFRA, 1).setValue("  Infrastructure / COGS");
   sh.getRange(CF.SM_NONPAY,  1).setValue("  Sales & Marketing — non-payroll");
@@ -84,15 +85,18 @@ function setupCashFlow(ss) {
     sh.getRange(CF.PAY_CS, col)
       .setFormula("=IF(" + ms + ">" + HOR + ",\"\",-'👥 Headcount'!" + C + "8)")
       .setNumberFormat("$#,##0").setBackground("#FFFFFF");
-    sh.getRange(CF.PAY_GA, col)
+    sh.getRange(CF.PAY_MKTG, col)
       .setFormula("=IF(" + ms + ">" + HOR + ",\"\",-'👥 Headcount'!" + C + "10)")
+      .setNumberFormat("$#,##0").setBackground("#FFFFFF");
+    sh.getRange(CF.PAY_GA, col)
+      .setFormula("=IF(" + ms + ">" + HOR + ",\"\",-'👥 Headcount'!" + C + "12)")
       .setNumberFormat("$#,##0").setBackground("#FFFFFF");
     sh.getRange(CF.COGS_INFRA, col)
       .setFormula("=IF(" + ms + ">" + HOR + ",\"\",IFERROR(-'💸 P&L'!" + C + PNL.INFRA + ",0))")
       .setNumberFormat("$#,##0").setBackground("#FFFFFF");
     sh.getRange(CF.SM_NONPAY, col)
       .setFormula("=IF(" + ms + ">" + HOR + ",\"\","
-        + "IFERROR(-('💸 P&L'!" + C + PNL.SM_SUBTOTAL + "-'💸 P&L'!" + C + PNL.SALES_PAYROLL + "),0))")
+        + "IFERROR(-('💸 P&L'!" + C + PNL.SM_SUBTOTAL + "-'💸 P&L'!" + C + PNL.SALES_PAYROLL + "-'💸 P&L'!" + C + PNL.MKTG_PAYROLL + "),0))")
       .setNumberFormat("$#,##0").setBackground("#FFFFFF");
     sh.getRange(CF.GA_NONPAY, col)
       .setFormula("=IF(" + ms + ">" + HOR + ",\"\","
@@ -158,7 +162,7 @@ function setupCashFlow(ss) {
     }
   }
 
-  [CF.CUST_CASH, CF.INT_INCOME, CF.PAY_ENG, CF.PAY_SALES, CF.PAY_CS, CF.PAY_GA,
+  [CF.CUST_CASH, CF.INT_INCOME, CF.PAY_ENG, CF.PAY_SALES, CF.PAY_CS, CF.PAY_MKTG, CF.PAY_GA,
    CF.COGS_INFRA, CF.SM_NONPAY, CF.GA_NONPAY]
     .forEach(function(r, i) { sh.getRange(r, 1).setBackground(i % 2 === 0 ? "#FFFFFF" : "#F8F9FA"); });
   sh.getRange(CF.CAP_RAISED, 1).setBackground("#FFFFFF");
@@ -172,7 +176,7 @@ function setupCashFlow(ss) {
 
   [CF.NET_OPS, CF.NET_FIN, CF.NET_INV, CF.BEG_CASH, CF.END_CASH, CF.BURN_RATE, CF.RUNWAY]
     .forEach(function(r) { sh.getRange(r, 1).setFontWeight("bold").setFontColor("#000000"); });
-  [CF.CUST_CASH, CF.INT_INCOME, CF.PAY_ENG, CF.PAY_SALES, CF.PAY_CS, CF.PAY_GA,
+  [CF.CUST_CASH, CF.INT_INCOME, CF.PAY_ENG, CF.PAY_SALES, CF.PAY_CS, CF.PAY_MKTG, CF.PAY_GA,
    CF.COGS_INFRA, CF.SM_NONPAY, CF.GA_NONPAY, CF.CAP_RAISED,
    CF.PLUS_OPS, CF.PLUS_FIN, CF.PLUS_INV, CF.CASH_ARR, CF.CUMUL_CAP, CF.CUMUL_BURN]
     .forEach(function(r) { sh.getRange(r, 1).setFontWeight("normal").setFontColor("#444444"); });

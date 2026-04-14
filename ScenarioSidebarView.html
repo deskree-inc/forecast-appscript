@@ -237,17 +237,6 @@
             margin-top: 8px;
         }
 
-        .investor-hint {
-            font-size: 11px;
-            color: #5f6368;
-            margin-bottom: 8px;
-            line-height: 1.35;
-        }
-
-        .investor-strip .btn {
-            margin-top: 0;
-        }
-
         .hint-row {
             font-size: 10px;
             color: #5f6368;
@@ -293,15 +282,6 @@
         <div class="tab" onclick="switchTab('export')">⬆️ Export</div>
     </div>
 
-    <div class="section investor-strip">
-        <div class="section-title">Investor view</div>
-        <p class="investor-hint">Hides internal tabs and &ldquo;Start here&rdquo;; opens &ldquo;For investors&rdquo; (how to read). Editors can still unhide.</p>
-        <div class="row2">
-            <button type="button" class="btn btn-secondary" onclick="investorEnter()">Hide internal</button>
-            <button type="button" class="btn btn-secondary" onclick="investorRestore()">Show internal</button>
-        </div>
-    </div>
-
     <!-- ── JSON PANEL ─────────────────────────────────────── -->
     <div id="panel-json" class="panel active">
         <p class="json-hint">
@@ -315,7 +295,10 @@
     <!-- ── EXPORT PANEL ───────────────────────────────────── -->
     <div id="panel-export" class="panel">
         <p class="json-hint">Export the current Drivers tab as JSON — paste into Claude to ask for variations.</p>
-        <button class="btn btn-secondary" onclick="exportCurrent()">📤 Read current model state</button>
+        <div class="row2" style="margin-bottom: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="exportCurrent()">📤 Read current model state</button>
+            <button type="button" class="btn btn-secondary" onclick="copyExportToClipboard()">📋 Copy to clipboard</button>
+        </div>
         <div id="export-out" class="export-box" style="display:none"></div>
     </div>
 
@@ -380,25 +363,54 @@
                     const box = document.getElementById("export-out");
                     box.textContent = JSON.stringify(data, null, 2);
                     box.style.display = "block";
+                    setStatus("✓ JSON loaded below — use Copy to clipboard or select text.", false);
                 })
                 .withFailureHandler(err => setStatus("❌ " + err.message, true))
                 .getCurrentScenario();
         }
 
-        function investorEnter() {
-            setStatus("⏳ Applying investor view…", false);
-            google.script.run
-                .withSuccessHandler(() => setStatus("✓ Investor view applied. For investors tab selected (toast on sheet).", false))
-                .withFailureHandler(err => setStatus("❌ " + err.message, true))
-                .showInvestorView();
+        function copyExportToClipboard() {
+            const box = document.getElementById("export-out");
+            const text = (box.textContent || "").trim();
+            if (!text) {
+                setStatus('Click "Read current model state" first, then copy.', true);
+                return;
+            }
+            function doneOk() {
+                setStatus("✓ Copied to clipboard.", false);
+            }
+            function doneFail() {
+                setStatus("❌ Could not copy automatically — select the JSON in the box and press ⌘C / Ctrl+C.", true);
+            }
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+                navigator.clipboard.writeText(text).then(doneOk).catch(function () {
+                    fallbackCopyTextToClipboard(text, doneOk, doneFail);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text, doneOk, doneFail);
+            }
         }
 
-        function investorRestore() {
-            setStatus("⏳ Restoring tabs…", false);
-            google.script.run
-                .withSuccessHandler(() => setStatus("✓ Internal tabs visible again.", false))
-                .withFailureHandler(err => setStatus("❌ " + err.message, true))
-                .showInternalSheets();
+        function fallbackCopyTextToClipboard(text, onOk, onFail) {
+            var ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "fixed";
+            ta.style.left = "0";
+            ta.style.top = "0";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                var ok = document.execCommand("copy");
+                document.body.removeChild(ta);
+                if (ok) onOk();
+                else onFail();
+            } catch (e) {
+                document.body.removeChild(ta);
+                onFail();
+            }
         }
     </script>
 </body>

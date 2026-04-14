@@ -124,7 +124,7 @@ function setupSummary(ss) {
   rowLbl(SUM.ENT_ACV,     "ENT Beg. ACV ($)");     bench(SUM.ENT_ACV,     "Drivers C19");
   rowLbl(SUM.MM_CHURN,    "MM Annual Churn %");     bench(SUM.MM_CHURN,    "Drivers D18");
   rowLbl(SUM.ENT_CHURN,   "ENT Annual Churn %");    bench(SUM.ENT_CHURN,   "Drivers D19");
-  rowLbl(SUM.EXIST_ARR,   "Existing Book ARR ($)"); bench(SUM.EXIST_ARR,   "Drivers B107");
+  rowLbl(SUM.EXIST_ARR,   "Existing Book ARR ($)"); bench(SUM.EXIST_ARR,   "Drivers B109");
   [SUM.TARGET_ARR,SUM.HORIZON_ROW,SUM.LOGO_GROWTH_ROW,SUM.MM_ACV,SUM.ENT_ACV,
    SUM.MM_CHURN,SUM.ENT_CHURN,SUM.EXIST_ARR].forEach(function(r){sh.setRowHeight(r,20);});
 
@@ -164,20 +164,20 @@ function setupSummary(ss) {
     setVal(SUM.MOM_GROWTH_IMPLIED, col,
       "=IF("+m+"=\"\",\"\",IF("+m+"<=1,\"—\",IFERROR(POWER("+arrM+"/"+arr1+",1/MAX(1,"+m+"-1))-1,\"—\")))",
       "0.0%");
-    setVal(SUM.LOGOS, col, hcF(17,col), "0", null, true);
+    setVal(SUM.LOGOS, col, hcF(19,col), "0", null, true);
     setVal(SUM.NRR, col,
       "=IF("+m+"=\"\",\"\",IF("+m+"<=1,\"—\",IFERROR(INDEX('💸 P&L'!$B$"+PNL.NRR+":$BQ$"+PNL.NRR+",1,"+m+"),\"—\")))",
       "0%", null, true);
     setVal(SUM.GROSS_MARGIN, col, pnlF(PNL.GROSS_MARGIN,col), "0%", null, true);
     var mmCumul  = "INDEX('📈 Revenue'!$"+mmCulCol+":$"+mmCulCol+","+m+"+"+dsOff+")";
     var mmExCum  = "INDEX('📈 Revenue'!$"+exMmCulCol+":$"+exMmCulCol+","+m+"+"+dsOff+")";
-    var mmLogos  = "INDEX('👥 Headcount'!$B$15:$BQ$15,1,"+m+")";
+    var mmLogos  = "INDEX('👥 Headcount'!$B$17:$BQ$17,1,"+m+")";
     setVal(SUM.ARR_PER_LOGO_MM, col,
       "=IF("+m+"=\"\",\"\",IFERROR(("+mmCumul+"+"+mmExCum+")/MAX(1,"+mmLogos+"),\"—\"))",
       "$#,##0");
     var entCumul = "INDEX('📈 Revenue'!$"+entCulCol+":$"+entCulCol+","+m+"+"+dsOff+")";
     var entExCum = "INDEX('📈 Revenue'!$"+exEntCulCol+":$"+exEntCulCol+","+m+"+"+dsOff+")";
-    var entLogos = "INDEX('👥 Headcount'!$B$16:$BQ$16,1,"+m+")";
+    var entLogos = "INDEX('👥 Headcount'!$B$18:$BQ$18,1,"+m+")";
     setVal(SUM.ARR_PER_LOGO_ENT, col,
       "=IF("+m+"=\"\",\"\",IFERROR(("+entCumul+"+"+entExCum+")/MAX(1,"+entLogos+"),\"—\"))",
       "$#,##0");
@@ -202,7 +202,7 @@ function setupSummary(ss) {
   });
 
   sh.getRange(SUM.PLANNED_RAISE, 2)
-    .setFormula("=IFERROR(SUMPRODUCT((LEN(TRIM('🎛️ Drivers'!B121:B123))>0)*IFERROR(VALUE('🎛️ Drivers'!B121:B123),0)),0)")
+    .setFormula("=IFERROR(SUMPRODUCT((LEN(TRIM('🎛️ Drivers'!B123:B125))>0)*IFERROR(VALUE('🎛️ Drivers'!B123:B125),0)),0)")
     .setNumberFormat("$#,##0").setFontWeight("bold");
 
   [2,3,4,5].forEach(function(col) {
@@ -214,9 +214,9 @@ function setupSummary(ss) {
       "=IF("+m+"=\"\",\"\",IF("+m+"<=12,\"—\",IFERROR(INDEX('💸 P&L'!$B$"+PNL.RULE_OF_40+":$BQ$"+PNL.RULE_OF_40+",1,"+m+"),\"—\")))",
       "0%", null, true);
     setVal(SUM.ARR_PER_EMP, col, pnlF(PNL.ARR_PER_EMP, col), "$#,##0", null, true);
-    setVal(SUM.HEADCOUNT, col, hcF(12, col), "0", null, true);
+    setVal(SUM.HEADCOUNT, col, hcF(14, col), "0", null, true);
     setVal(SUM.PAYROLL_PCT, col,
-      "=IF("+m+"=\"\",\"\",IFERROR(INDEX('👥 Headcount'!$B$22:$BQ$22,1,"+m+"),\"\"))",
+      "=IF("+m+"=\"\",\"\",IFERROR(INDEX('👥 Headcount'!$B$24:$BQ$24,1,"+m+"),\"\"))",
       "0%");
     setVal(SUM.ENG_HC, col, hcF(3, col), "0");
     setVal(SUM.CS_HC,  col, hcF(7, col), "0");
