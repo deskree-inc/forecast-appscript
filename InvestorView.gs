@@ -3,7 +3,6 @@
 /** Tab names hidden when entering investor view (operational / sensitive). */
 var INVESTOR_INTERNAL_SHEETS = [
   "🎛️ Drivers",
-  "👥 Headcount",
   "💰 Funding",
   "🚦 Benchmarks"
 ];

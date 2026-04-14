@@ -77,7 +77,7 @@ For login, pull, `open-script`, API enablement, and forks, see **[Deploy with cl
 Running `setupFinancialModel()` builds these sheets:
 
 - **Start here** (`SHEET_INSTRUCTIONS` in `ModelConstants.gs`) — how to use the model (inputs vs formulas) and workflow (including when to run benchmarks).
-- **For investors** — short external-facing guide: how to read Summary / Revenue / P&L / Cash flow, high-level note that the forecast is produced with Deskree’s internal planning model and checked against benchmarks and industry ranges. Shown when entering **investor view**; the **Start here** tab is hidden in that mode.
+- **For investors** — short external-facing guide: how to read Summary / Revenue / Headcount / P&L / Cash flow, high-level note that the forecast is produced with Deskree’s internal planning model and checked against benchmarks and industry ranges. Shown when entering **investor view**; the **Start here** tab is hidden in that mode.
 - **Drivers** — the **only** tab where you enter assumptions: funding rounds, ARR targets, ICP segments (mid-market & enterprise), logo ramp, maintenance ratios (AE / FDE / CSM), department defaults, individual roles, marketing, infrastructure, and sales comp.
 - **Funding**, **Headcount**, **Revenue**, **P&L**, **Cash flow**, **Summary** — calculated views driven from Drivers.
 - **Scenarios** — scenario comparison / framing.
@@ -92,14 +92,14 @@ From `ScenarioSidebar.gs` → `onOpen()`, the **📊 Forecast** menu (rename via
 1. **Open Scenario Manager** — HTML sidebar to apply a scenario or inspect **current model state** (`getCurrentScenario()`).
 2. **Check Benchmarks** — runs `runBenchmarks()` and fills **🚦 Benchmarks** with traffic-light style checks (e.g. CAC payback, LTV:CAC, implied NRR vs churn/expansion, growth vs Bessemer-style heuristics, ARR vs capital raised, AE account load, gross margin, burn multiple when wired).
 3. **Rebuild model (run setup)…** — confirms, then runs `setupFinancialModel()` (same as in **Extensions → Apps Script**). Clears and rebuilds model tabs; duplicate the file or export data first if you need to keep current values.
-4. **Enter investor view (hide internal tabs)** — hides **Drivers**, **Headcount**, **Funding**, **Benchmarks**, and **Start here**; opens **`📋 For investors`** (external how-to copy in `SetupInvestorBrief.gs`).
+4. **Enter investor view (hide internal tabs)** — hides **Drivers**, **Funding**, **Benchmarks**, and **Start here**; opens **`📋 For investors`** (external how-to copy in `SetupInvestorBrief.gs`). **Headcount** stays visible.
 5. **Show all internal sheets** — unhides those tabs and **Start here**, and activates **Drivers**.
 
 After loading a scenario, the script suggests running **Check Benchmarks** before sharing numbers externally.
 
 ### Investor view (same spreadsheet)
 
-Use **Enter investor view** before screen sharing or when you want recipients to start on **`📋 For investors`** (reader guide) and outputs (**Summary**, **Revenue**, **P&L**, **Cash flow**) without internal **Start here** or assumption tabs. **Show all internal sheets** restores **Start here** and full editing.
+Use **Enter investor view** before screen sharing or when you want recipients to start on **`📋 For investors`** (reader guide) and outputs (**Summary**, **Revenue**, **Headcount**, **P&L**, **Cash flow**) without internal **Start here** or assumption tabs. **Show all internal sheets** restores **Start here** and full editing.
 
 - **Customization:** Edit `INVESTOR_INTERNAL_SHEETS` in [`InvestorView.gs`](InvestorView.gs). Edit the narrative on **`📋 For investors`** in [`SetupInvestorBrief.gs`](SetupInvestorBrief.gs) (re-run `setupFinancialModel()` to refresh that tab from code). Tab name is `SHEET_INVESTOR_BRIEF` in [`ModelConstants.gs`](ModelConstants.gs). Do not delete internal tabs manually — formulas on output sheets depend on them; hiding is safe.
 - **Sharing:** Anyone with **edit** access can **unhide** tabs (View → Hidden sheets). Prefer **Viewer** on the file for external audiences if you need stronger presentation control. This is not a substitute for legal/financial redaction.

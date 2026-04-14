@@ -54,8 +54,8 @@ function setupInvestorBrief(ss) {
   r++;
   sh.getRange(r, 2, 1, 2).merge()
     .setValue(
-      "This workbook shows Deskree’s financial forecast at a summary level. The tabs left visible here focus on outcomes: growth, profitability, and cash — not line-by-line operating assumptions.\n\n" +
-        "Internal detail (assumptions, headcount mechanics, funding inputs, and internal benchmark checks) is hidden in the investor-friendly view so the story stays on the metrics that matter for the conversation."
+      "This workbook shows Deskree’s financial forecast at a summary level. The tabs left visible here focus on outcomes: growth, team scale, profitability, and cash — not line-by-line operating assumptions.\n\n" +
+        "Internal detail (driver-level assumptions, funding inputs, and internal benchmark checks) is hidden in the investor-friendly view so the story stays on the metrics that matter for the conversation."
     )
     .setBackground("#EBF5FB")
     .setWrap(true)
@@ -70,6 +70,8 @@ function setupInvestorBrief(ss) {
   irow(r, "📊 Summary", "Start here: headline KPIs and year-over-year context.", "#D6EAF8", "#EBF5FB");
   r++;
   irow(r, "📈 Revenue", "ARR path, segments, and revenue bridge — how the top line is expected to develop.");
+  r++;
+  irow(r, "👥 Headcount", "Planned headcount by role and department over time — how the team is expected to scale with the business.");
   r++;
   irow(r, "💸 P&L", "Income statement view: revenue through EBITDA and key ratios.");
   r++;
